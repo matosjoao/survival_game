@@ -75,4 +75,8 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
         // Invoke Interact event
         InteractEvent?.Invoke();
     }
+
+    public Vector2 GetLookVector() {
+        return MouseDelta;
+    }
 }

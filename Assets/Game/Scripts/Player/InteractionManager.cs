@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class InteractionManager : MonoBehaviour
 {
@@ -14,12 +11,12 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private float checkRate = 0.05f;
     [SerializeField] private float maxCheckDistance;
     [SerializeField] private LayerMask layerMask;
-    [SerializeField] private TextMeshProUGUI promptText;
 
     private float lastCheckTime;
     private GameObject curInteractGameObject;
     private IInteractable curInteractable;
     private Camera cam;
+    private Transform cameraTransform;
 
     private void OnEnable() 
     {
@@ -34,6 +31,8 @@ public class InteractionManager : MonoBehaviour
     private void Start() 
     {
         cam = Camera.main;
+
+        cameraTransform = cam.gameObject.transform;
     }
 
     private void Update() 
@@ -45,7 +44,8 @@ public class InteractionManager : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
             RaycastHit hit;
 
-            if(Physics.Raycast(ray, out hit, maxCheckDistance, layerMask))
+            //if(Physics.Raycast(ray, out hit, maxCheckDistance, layerMask))
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, maxCheckDistance, layerMask))
             {
                 if(hit.collider.gameObject != curInteractGameObject)
                 {
@@ -58,22 +58,21 @@ public class InteractionManager : MonoBehaviour
             {
                 curInteractGameObject = null;
                 curInteractable = null;
-                promptText.gameObject.SetActive(false);
+                UIManager.Instance.SetPromptText(false);
             }
         }
     }
 
     private void SetPromptText()
     {
-        promptText.gameObject.SetActive(true);
-        promptText.text = string.Format("<b>[E]</b> {0}", curInteractable.GetInteractPrompt());
+        UIManager.Instance.SetPromptText(true, string.Format("<b>[E]</b> {0}", curInteractable.GetInteractPrompt()));
     }
 
     private void OnInteract()
     {
         if(curInteractable == null) return;
         
-        // Course way
+        // TODO: Delete - Course way
         //curInteractable.OnInteract();
 
         ItemObject itemObject = curInteractGameObject.GetComponent<ItemObject>();
@@ -81,7 +80,7 @@ public class InteractionManager : MonoBehaviour
 
         curInteractGameObject = null;
         curInteractable = null;
-        promptText.gameObject.SetActive(false);
+        UIManager.Instance.SetPromptText(false);
     }
 }
 

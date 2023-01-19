@@ -4,16 +4,15 @@ using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
 {
-    [field: Header("Components")]
-    [field: SerializeField] public InputReader InputReader { get; private set;}
+    [Header("Components")]
+    [SerializeField] private InputReader InputReader;
 
     [Header("Look")]
-    public Transform cameraContainer;
-    public float minXLook;
-    public float maxXLook;
+    [SerializeField] private Transform cameraContainer;
+    [SerializeField] private float minXLook;
+    [SerializeField] private float maxXLook;
     private float camCurXRot;
-    public float lookSensitivity;
-
+    [SerializeField] private float lookSensitivity;
 
     [HideInInspector]
     public bool canLook = true;
@@ -28,6 +27,7 @@ public class PlayerCamera : MonoBehaviour
     {
         if(canLook == true)
             CameraLook();
+
     }
 
     private void CameraLook ()

@@ -1,9 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
-using TMPro;
 
 public class Inventory : Singleton<Inventory>
 {
@@ -13,78 +10,66 @@ public class Inventory : Singleton<Inventory>
     [SerializeField] private InputReader inputReader;
     [SerializeField] private PlayerController controller;
     [SerializeField] private PlayerNeeds playerNeeds;
-    [SerializeField] private PlayerCamera playerCamera;
 
     [Header("Properties")]
-    [SerializeField] private ItemSlotUI[] uiSlots;
-    [SerializeField] private GameObject inventoryWindow;
     [SerializeField] private Transform dropPosition;
-
-    [Header("Properties UI")]
-    [SerializeField] private GameObject useButton;
-    [SerializeField] private GameObject equipButton;
-    [SerializeField] private GameObject unEquipButton;
-    [SerializeField] private GameObject dropButton;
-
+ 
     [Header("Selected Item")]
     private ItemSlot selectedItem;
     private int selectedItemIndex;
     
-    [Header("Events")]
-    public UnityEvent onOpenInventory;
-    public UnityEvent onCloseInventory;
-
+    [Header("Items")]
     private ItemSlot[] slots;
+
+    [Header("Equip Item")]
     private int curEquipIndex;
-
-
 
     private void OnEnable() 
     {
+        // Subscribe to events
         inputReader.InventoryEvent += OnInventory;
     }
 
     private void OnDisable() 
     {
+        // Unsubscribe to events
         inputReader.InventoryEvent -= OnInventory;
     }
 
     private void Start() 
     {
-        inventoryWindow.SetActive(false);
+        // Close inventory window
+        UIManager.Instance.ToggleInventoryWindow();
         
         // Initialize Slots
-        slots = new ItemSlot[uiSlots.Length];
+        int slotsLength = UIManager.Instance.GetInventorySize();
+        slots = new ItemSlot[slotsLength];
+
         for (int i = 0; i < slots.Length; i++)
         {
             slots[i] = new ItemSlot();
-            uiSlots[i].index = i;
-            uiSlots[i].Clear();
         }
+        UIManager.Instance.InitializeUISlots(slots);
 
+        // Clear inventory window
         ClearSelectedItemWindow();
     }
 
     private void OnInventory()
     {
-        if(inventoryWindow.activeInHierarchy)
+        if(UIManager.Instance.IsInventoryOpen())
         {
-            inventoryWindow.SetActive(false);
-            onCloseInventory.Invoke();
-            playerCamera.ToggleCursor(false);
+            UIManager.Instance.ToggleInventoryWindow();
+            //onCloseInventory.Invoke();
+            controller.ToggleCursor(false);
         }
         else
         {
-            playerCamera.ToggleCursor(true);
-            inventoryWindow.SetActive(true);
-            onOpenInventory.Invoke();
+            controller.ToggleCursor(true);
+            UIManager.Instance.ToggleInventoryWindow(true);
+            //onOpenInventory.Invoke();
             ClearSelectedItemWindow();
         }
-    }
-
-    public bool IsOpen()
-    {
-        return inventoryWindow.activeInHierarchy;
     }
 
     public void AddItem(ItemData item)
@@ -98,7 +83,9 @@ public class Inventory : Singleton<Inventory>
             if(slotToStackTo != null)
             {
                 slotToStackTo.quantity++;
-                UpdateUI();
+
+                // Update UI Slots
+                UIManager.Instance.UpdateInventorySlots(slots);
                 return;
             }
         }
@@ -109,7 +96,9 @@ public class Inventory : Singleton<Inventory>
         {
             emptySlot.item = item;
             emptySlot.quantity = 1;
-            UpdateUI();
+
+            // Update UI Slots
+            UIManager.Instance.UpdateInventorySlots(slots);
             return;
         }
 
@@ -120,22 +109,6 @@ public class Inventory : Singleton<Inventory>
     private void ThrowItem(ItemData item)
     {
         Instantiate(item.dropPrefab, dropPosition.position, Quaternion.Euler(Vector3.one * Random.value * 360.0f));
-    }
-
-    private void UpdateUI()
-    {
-        // Update UI Slots
-        for (int i = 0; i < slots.Length; i++)
-        {
-            if(slots[i].item != null)
-            {
-                uiSlots[i].Set(slots[i]);
-            }
-            else
-            {
-                uiSlots[i].Clear();
-            }
-        }
     }
 
     private ItemSlot GetItemStack(ItemData item)
@@ -174,10 +147,8 @@ public class Inventory : Singleton<Inventory>
         selectedItem = slots[index];
         selectedItemIndex = index;
 
-        useButton.SetActive(selectedItem.item.type == ItemType.Consumable);
-        equipButton.SetActive(selectedItem.item.type == ItemType.Equipable && !uiSlots[index].equipped);
-        unEquipButton.SetActive(selectedItem.item.type == ItemType.Equipable && uiSlots[index].equipped);
-        dropButton.SetActive(true);
+        // Update buttons
+        UIManager.Instance.ToggleInventoryButtons(selectedItem.item.type, index);
     }
 
     private void ClearSelectedItemWindow()
@@ -187,10 +158,7 @@ public class Inventory : Singleton<Inventory>
         selectedItemIndex = -1;
 
         // Disable buttons
-        useButton.SetActive(false);
-        equipButton.SetActive(false);
-        unEquipButton.SetActive(false);
-        dropButton.SetActive(false);
+        UIManager.Instance.DisableInventoryButtons();
     }
 
     public void OnUseButton()
@@ -247,17 +215,19 @@ public class Inventory : Singleton<Inventory>
     {
         selectedItem.quantity--;
         if(selectedItem.quantity == 0)
-        {
-            if(uiSlots[selectedItemIndex].equipped == true)
+        {   
+            // TODO:: Improve
+            /* if(uiSlots[selectedItemIndex].equipped == true)
             {
                 UnEquip(selectedItemIndex);
-            }
+            } */
 
             selectedItem.item = null;
             ClearSelectedItemWindow();
         }
 
-        UpdateUI();
+        // Update UI Slots
+        UIManager.Instance.UpdateInventorySlots(slots);
     }
 
     private void RemoveItem(ItemData item)

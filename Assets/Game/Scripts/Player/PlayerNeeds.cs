@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
 
 public class PlayerNeeds : MonoBehaviour, IDamagable
 {
@@ -14,8 +10,6 @@ public class PlayerNeeds : MonoBehaviour, IDamagable
     [Header("Decays")]
     [SerializeField] private float noHungerHealthDecay;
     [SerializeField] private float noThirstHealthDecay;
-
-    public UnityEvent onTakeDamage;
 
     private void Start() 
     {
@@ -51,9 +45,7 @@ public class PlayerNeeds : MonoBehaviour, IDamagable
         }
 
         // Update UI bars
-        health.uiBar.fillAmount = health.GetPercentage();
-        hunger.uiBar.fillAmount = hunger.GetPercentage();
-        thirst.uiBar.fillAmount = thirst.GetPercentage();
+        UIManager.Instance.UpdateNeedsUI(health.GetPercentage(), hunger.GetPercentage(), thirst.GetPercentage());
     }
 
     public void Heal(float amount)
@@ -75,7 +67,7 @@ public class PlayerNeeds : MonoBehaviour, IDamagable
     {
         // TODO:: Change health for another script
         health.Subtract(amount);
-        onTakeDamage?.Invoke();
+        UIManager.Instance.TakePhisicalDamage();
     }
 
     public void Die()
@@ -94,7 +86,6 @@ public class Need
     public float startValue;
     public float regenRate;
     public float decayRate;
-    public Image uiBar;
 
     public void Add(float amount)
     {
