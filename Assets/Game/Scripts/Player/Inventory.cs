@@ -4,12 +4,10 @@ using UnityEngine;
 
 public class Inventory : Singleton<Inventory>
 {
-
-
     [Header("Components")]
     [SerializeField] private InputReader inputReader;
-    [SerializeField] private PlayerController controller;
     [SerializeField] private PlayerNeeds playerNeeds;
+    [SerializeField] private EquipManager equipManager;
 
     [Header("Properties")]
     [SerializeField] private Transform dropPosition;
@@ -57,15 +55,17 @@ public class Inventory : Singleton<Inventory>
 
     private void OnInventory()
     {
+        // Called onClick Tab to inventory
+
         if(UIManager.Instance.IsInventoryOpen())
         {
             UIManager.Instance.ToggleInventoryWindow();
             //onCloseInventory.Invoke();
-            controller.ToggleCursor(false);
+            UIManager.Instance.ToggleCursor(false);
         }
         else
         {
-            controller.ToggleCursor(true);
+            UIManager.Instance.ToggleCursor(true);
             UIManager.Instance.ToggleInventoryWindow(true);
             //onOpenInventory.Invoke();
             ClearSelectedItemWindow();
@@ -102,7 +102,7 @@ public class Inventory : Singleton<Inventory>
             return;
         }
 
-        // Can't stack and no empty slot
+        // TODO:: Improve maybe dont get it if can't stack and no empty slot
         ThrowItem(item);
     }
 
@@ -113,6 +113,7 @@ public class Inventory : Singleton<Inventory>
 
     private ItemSlot GetItemStack(ItemData item)
     {
+        // Search for a slot of the same type
         for (int i = 0; i < slots.Length; i++)
         {
             if(slots[i].item == item && slots[i].quantity < item.maxStackAmount)
@@ -126,6 +127,7 @@ public class Inventory : Singleton<Inventory>
 
     private ItemSlot GetEmptySlot()
     {
+        // Search for a empty slot
         for (int i = 0; i < slots.Length; i++)
         {
             if(slots[i].item == null)
@@ -139,6 +141,7 @@ public class Inventory : Singleton<Inventory>
 
     public void SelectItem(int index)
     {
+        // When onclick from UISlot select item
         if(slots[index].item == null)
         {
             return;
@@ -163,6 +166,7 @@ public class Inventory : Singleton<Inventory>
 
     public void OnUseButton()
     {
+        // Onclick use button
         if(selectedItem.item.type == ItemType.Consumable)
         {
             for (int i = 0; i < selectedItem.item.consumables.Length; i++)
@@ -192,17 +196,51 @@ public class Inventory : Singleton<Inventory>
 
     public void OnEquipButton()
     {
+        // Onclick equip button
 
+        // If has another equipped, unEquip
+        if(UIManager.Instance.IsEquipped(curEquipIndex))
+        {
+            UnEquip(curEquipIndex);
+        }
+
+        // Update ui slot to equipped
+        UIManager.Instance.ToggleEquipUISlot(selectedItemIndex, true);
+
+        // Assign current equip index
+        curEquipIndex = selectedItemIndex;
+
+        // Equip item
+        equipManager.EquipNewItem(selectedItem.item);
+
+        // Update ui slots
+        UIManager.Instance.UpdateInventorySlots(slots);
+
+        // Set selected item
+        SelectItem(selectedItemIndex);
     }
 
     private void UnEquip(int index)
     {
+        // Update ui slot to equipped
+        UIManager.Instance.ToggleEquipUISlot(index, false);
 
+        // UnEquip item
+        equipManager.UnEquip();
+
+        // Update ui slots
+        UIManager.Instance.UpdateInventorySlots(slots);
+
+        // Set selected item
+        if(selectedItemIndex == index)
+        {
+            SelectItem(index);
+        }
     }
 
     public void OnUnEquipButton()
     {
-
+        UnEquip(selectedItemIndex);
     }
 
     public void OnDropButton()
@@ -217,10 +255,10 @@ public class Inventory : Singleton<Inventory>
         if(selectedItem.quantity == 0)
         {   
             // TODO:: Improve
-            /* if(uiSlots[selectedItemIndex].equipped == true)
+            if(UIManager.Instance.IsEquipped(selectedItemIndex))
             {
                 UnEquip(selectedItemIndex);
-            } */
+            }
 
             selectedItem.item = null;
             ClearSelectedItemWindow();
@@ -230,13 +268,48 @@ public class Inventory : Singleton<Inventory>
         UIManager.Instance.UpdateInventorySlots(slots);
     }
 
-    private void RemoveItem(ItemData item)
+    public void RemoveItem(ItemData item)
     {
-        
+        for (int i = 0; i < slots.Length; i++)
+        {  
+            if(slots[i].item == item)
+            {
+                slots[i].quantity --;
+                
+                if(slots[i].quantity == 0)
+                {
+                    if(UIManager.Instance.IsEquipped(i))
+                    {
+                        UnEquip(i);
+                    }
+
+                    slots[i].item = null;
+                    ClearSelectedItemWindow();
+                }
+
+                // Update UI Slots
+                UIManager.Instance.UpdateInventorySlots(slots);
+                return;
+            }
+        }
     }
 
     public bool HasItems(ItemData item, int quantity)
     {
+        if(slots == null) 
+            return false;
+
+        int amount = 0;
+
+        for (int i = 0; i < slots.Length; i++)
+        {  
+            if(slots[i].item == item)
+                amount += slots[i].quantity;
+
+            if(amount >= quantity)
+                return true;
+        }
+
         return false;
     }
 }

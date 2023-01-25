@@ -1,5 +1,4 @@
 using UnityEngine;
-using Cinemachine;
 
 public class PlayerController : MonoBehaviour
 {
@@ -15,11 +14,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundedOffset;
     [SerializeField] private float rotationDamping;
 
-    [HideInInspector]
-    public bool canLook = true;
-
-    private Transform mainCameraTransform;
-
     [Header("Cinemachine")]
     [SerializeField] private GameObject cinemachineCameraTarget;
     [SerializeField] private float topClamp = 70.0f;
@@ -28,9 +22,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float baseSensitivity = .12f;
     [SerializeField] private float lookSensitivity = 1.0f;
     
+    /* [HideInInspector]
+    public bool CanLook { get; private set;} = true; */
+
     private float cinemachineTargetYaw;
     private float cinemachineTargetPitch;
     private const float threshold = 0.01f;
+
+    private Transform mainCameraTransform;
 
     private void OnEnable() 
     {
@@ -42,11 +41,6 @@ public class PlayerController : MonoBehaviour
     {
         // Unsubscribe to events
         inputReader.JumpEvent -= OnJump;
-    }
-
-    private void Awake() 
-    {
-        
     }
 
     private void Start() 
@@ -77,19 +71,6 @@ public class PlayerController : MonoBehaviour
     private void LateUpdate() 
     {
         CameraRotation();
-
-        /* // TODO: Improve
-        // Can move camera?
-        if(canLook && thirdPersonVCam.m_XAxis.m_MaxSpeed != 200.0f)
-        {
-            thirdPersonVCam.m_XAxis.m_MaxSpeed = 200.0f;
-            thirdPersonVCam.m_YAxis.m_MaxSpeed = 2.0f;
-        }
-        else if(!canLook)
-        {
-            thirdPersonVCam.m_YAxis.m_MaxSpeed = 0;
-            thirdPersonVCam.m_XAxis.m_MaxSpeed = 0;
-        } */
     }
 
     private Vector3 CalculateMovement()
@@ -125,14 +106,14 @@ public class PlayerController : MonoBehaviour
     }
 
     private void CameraRotation() {
-        // if there is an input and camera position is not fixed
-        Vector2 lookVector = inputReader.GetLookVector();
-        if (lookVector.sqrMagnitude >= threshold && canLook) {
+        // If there is an input and camera position is not fixed
+        Vector2 lookVector = inputReader.MouseDelta;
+        if (lookVector.sqrMagnitude >= threshold && UIManager.Instance.CanLook) {
             cinemachineTargetYaw += lookVector.x * baseSensitivity * lookSensitivity;
-            cinemachineTargetPitch += lookVector.y * baseSensitivity * lookSensitivity;
+            cinemachineTargetPitch += lookVector.y * baseSensitivity * lookSensitivity * -1;
         }
 
-        // clamp our rotations so our values are limited 360 degrees
+        // Clamp our rotations so our values are limited 360 degrees
         cinemachineTargetYaw = ClampAngle(cinemachineTargetYaw, float.MinValue, float.MaxValue);
         cinemachineTargetPitch = ClampAngle(cinemachineTargetPitch, bottomClamp, topClamp);
 
@@ -160,11 +141,11 @@ public class PlayerController : MonoBehaviour
         return Physics.CheckSphere(spherePosition, groundedRadius, groundLayerMask, QueryTriggerInteraction.Ignore);
     }
 
-    public void ToggleCursor(bool toggle)
+    /* public void ToggleCursor(bool toggle)
     {
         Cursor.lockState = toggle ? CursorLockMode.None : CursorLockMode.Locked;
-        canLook = !toggle;
-    }
+        CanLook = !toggle;
+    } */
 
     private void OnDrawGizmos() 
     {

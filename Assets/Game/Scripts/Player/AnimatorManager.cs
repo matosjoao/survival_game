@@ -14,6 +14,8 @@ public class AnimatorManager : MonoBehaviour
     private const float AnimatorDampTime = 0.1f;
     private const float CrossFadeDuration = 0.1f;
 
+     private readonly int AttackHash = Animator.StringToHash("Attack");
+
     private void Update() 
     {
         if(inputReader.MovementValue == Vector2.zero) 
@@ -23,6 +25,16 @@ public class AnimatorManager : MonoBehaviour
         }
 
         animator.SetFloat(FreeLookSpeedHash, 1, AnimatorDampTime, Time.deltaTime);
+    }
+
+    public void SetOnAttackAnimation()
+    {
+        animator.CrossFadeInFixedTime(AttackHash, CrossFadeDuration);
+    }
+
+    public void SetFreeLookAnimation()
+    {
+        animator.CrossFadeInFixedTime(FreeLookBlendTreeHash, CrossFadeDuration);
     }
 
 }

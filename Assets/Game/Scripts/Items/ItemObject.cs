@@ -13,6 +13,10 @@ public class ItemObject : MonoBehaviour, IInteractable
 
     public void OnInteract()
     {
-        Debug.Log(itemData.displayName);
+        // Try add item to inventory
+        Inventory.Instance.AddItem(itemData);
+
+        // TODO:: Improve change to pool
+        Destroy(gameObject);
     }
 }

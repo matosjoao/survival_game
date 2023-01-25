@@ -72,12 +72,19 @@ public class InteractionManager : MonoBehaviour
     {
         if(curInteractable == null) return;
         
-        // TODO: Delete - Course way
-        //curInteractable.OnInteract();
+        // TODO:: Delete - Course way
+        curInteractable.OnInteract();
 
+        /* // Get current interacted object ItemObject component
         ItemObject itemObject = curInteractGameObject.GetComponent<ItemObject>();
-        inventory.AddItem(itemObject.Item);
 
+        // TODO:: Improve change to pool
+        Destroy(curInteractGameObject);
+
+        // Try add item to inventory
+        inventory.AddItem(itemObject.Item); */
+
+        // Reset interaction
         curInteractGameObject = null;
         curInteractable = null;
         UIManager.Instance.SetPromptText(false);

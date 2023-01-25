@@ -11,11 +11,11 @@ public class ItemSlotUI : MonoBehaviour
     [SerializeField] private Image icon;
     [SerializeField] private TextMeshProUGUI quantityText;
 
-    public int index;
-
     private ItemSlot curSlot;
     private Outline outline;
-    public bool equipped;
+
+    public bool Equipped { get; private set;}
+    public int Index { get; private set;}
 
     private void Awake() 
     {
@@ -24,7 +24,7 @@ public class ItemSlotUI : MonoBehaviour
 
     private void OnEnable() 
     {
-        outline.enabled = equipped;
+        outline.enabled = Equipped;
     }
 
     public void Set(ItemSlot slot)
@@ -38,7 +38,7 @@ public class ItemSlotUI : MonoBehaviour
 
         if(outline != null)
         {
-            outline.enabled = equipped;
+            outline.enabled = Equipped;
         }
     }
 
@@ -53,6 +53,16 @@ public class ItemSlotUI : MonoBehaviour
     public void OnButtonClick()
     {
         // TODO:: Try to solve this without singleton
-        Inventory.Instance.SelectItem(index); 
+        Inventory.Instance.SelectItem(Index); 
+    }
+
+    public void SetEquipped(bool value)
+    {
+        Equipped = value;
+    }
+
+    public void SetIndex(int value)
+    {
+        Index = value;
     }
 }
