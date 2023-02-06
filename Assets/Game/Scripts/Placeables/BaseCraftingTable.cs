@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BaseCraftingTable : MonoBehaviour, IInteractable
+public class BaseCraftingTable : Building, IInteractable
 {
     [SerializeField] GameObject craftingWindow;
 

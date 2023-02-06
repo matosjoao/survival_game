@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class EquipTool : Equip
 {
-    // TODO:: Change to a abstract class if we dont use monobehaviour
-
     [Header("Components")]
     [SerializeField] private Collider toolCollider;
 

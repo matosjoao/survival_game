@@ -2567,10 +2567,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputReader: {fileID: 8620810321868813292}
-  controller: {fileID: 8620810321868813293}
   playerNeeds: {fileID: 8620810321868813290}
   equipManager: {fileID: 4085574588228539228}
   dropPosition: {fileID: 2118218093415190128}
+  inventorySize: 10
+  quickAccessBarSize: 5
 --- !u!114 &4085574588228539228
 MonoBehaviour:
   m_ObjectHideFlags: 0

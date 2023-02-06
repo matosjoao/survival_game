@@ -1,16 +1,20 @@
 using UnityEngine;
 
+[RequireComponent(typeof(InputReader))]
+[RequireComponent(typeof(Inventory))]
 public class Crafting : Singleton<Crafting>
 {
     [Header("Components")]
-    [SerializeField] private InputReader inputReader;
+    private InputReader inputReader;
+    private Inventory inventory;
     
     [Header("Selected Item")]
-    private CraftingRecipeData selectedItem;
+    private CraftingData selectedItem;
     
     private void Awake() 
     {
         inputReader = GetComponent<InputReader>();
+        inventory = GetComponent<Inventory>();
     }
 
     private void OnEnable() 
@@ -43,7 +47,7 @@ public class Crafting : Singleton<Crafting>
         UIManager.Instance.UpdateCraftInfo();
     }
 
-    public void SelectItem(CraftingRecipeData recipeData)
+    public void SelectItem(CraftingData recipeData)
     {
         selectedItem = recipeData;
 
@@ -53,17 +57,16 @@ public class Crafting : Singleton<Crafting>
 
     public void OnCraftButton()
     {
+        // Has selected item
         if(selectedItem == null)
-        {
             return;
-        }
 
         // Can craft?
         bool canCraft = true;
 
         for (int i = 0; i < selectedItem.resourceCosts.Length; i++)
         {
-            if(!Inventory.Instance.HasItems(selectedItem.resourceCosts[i].item, selectedItem.resourceCosts[i].quantity))
+            if(!inventory.HasItems(selectedItem.resourceCosts[i].item, selectedItem.resourceCosts[i].quantity))
             {
                 canCraft = false;
                 break;
@@ -82,14 +85,11 @@ public class Crafting : Singleton<Crafting>
         // Remove resources costs from inventory
         for (int i = 0; i < selectedItem.resourceCosts.Length; i++)
         {
-            for (int x = 0; x < selectedItem.resourceCosts[i].quantity; x++)
-            {
-                Inventory.Instance.RemoveItem(selectedItem.resourceCosts[i].item);
-            }
+            inventory.RemoveResourcesCosts(selectedItem.resourceCosts[i].item, selectedItem.resourceCosts[i].quantity);
         }
 
         // Add item to inventory
-        Inventory.Instance.AddItem(selectedItem.itemToCraft);
+        inventory.AddItem(selectedItem.itemToCraft);
 
         // Update Recipes UIs
         UIManager.Instance.UpdateCraftRecipesUIs();

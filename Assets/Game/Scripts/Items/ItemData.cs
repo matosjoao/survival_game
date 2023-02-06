@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Item", menuName = "New Item")]
+[CreateAssetMenu(fileName = "Item", menuName = "New Item Recipe")]
 public class ItemData : ScriptableObject
 {
     [Header("Info")]
@@ -21,13 +19,18 @@ public class ItemData : ScriptableObject
 
     [Header("Equip")]
     public GameObject equipPrefab;
+
+    [Header("Build")]
+    public GameObject spawnPrefab;
+    public GameObject previewPrefab;
 }
 
 public enum ItemType
 {
     Resource,
     Equipable,
-    Consumable
+    Consumable,
+    Building
 }
 
 public enum ConsumableType

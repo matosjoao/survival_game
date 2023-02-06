@@ -7,9 +7,11 @@ public class EquipManager : MonoBehaviour
 {
     [Header("Properties")]
     [SerializeField] private Transform equipParent;
-
+    
+    [Header("Components")]
     private InputReader inputReader;
     private AnimatorManager animatorManager;
+
     private Equip currentEquip;
     private bool attacking;
 
@@ -56,6 +58,8 @@ public class EquipManager : MonoBehaviour
 
         }
     }
+
+    
 
     public void EquipNewItem(ItemData item)
     {

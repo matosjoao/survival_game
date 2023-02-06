@@ -80,6 +80,60 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MousePosition"",
+                    ""type"": ""Value"",
+                    ""id"": ""c5a04a12-ca8b-4ac8-b155-9fa26175728f"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""QuickSlotOne"",
+                    ""type"": ""Button"",
+                    ""id"": ""0d01438f-1c04-48fa-9a56-4358d8e3020d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlotTwo"",
+                    ""type"": ""Button"",
+                    ""id"": ""2fb3d6c2-3eee-4e7d-b7d7-ded23c817946"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlotThree"",
+                    ""type"": ""Button"",
+                    ""id"": ""44501d62-837d-478c-a249-81370c0ba6b1"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlotFour"",
+                    ""type"": ""Button"",
+                    ""id"": ""1f8a5304-e977-4bb7-be82-b272128a6fc3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlotFive"",
+                    ""type"": ""Button"",
+                    ""id"": ""f8d4807c-e31c-4d28-858c-53287f842e50"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -166,7 +220,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""MouseKeyboard"",
                     ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -177,7 +231,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""path"": ""<Mouse>/delta"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""MouseKeyboard"",
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -190,6 +244,72 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""MouseKeyboard"",
                     ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1539b11e-6d2d-4a7f-9c4a-782ac49dc1f5"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""MousePosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cb828312-3d67-492a-99d2-da09e09481d9"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""QuickSlotOne"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e9a8afba-69bb-412e-b601-d81798e8de76"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""QuickSlotTwo"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ac119d5a-55c1-47cf-9f5e-b967039052e8"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""QuickSlotThree"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""acc6deac-356b-4d7b-beec-ab91b238a46e"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""QuickSlotFour"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2f789a1b-d5db-4b5d-bdc6-f4e186cf4238"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""QuickSlotFive"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -223,6 +343,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Main_Interact = m_Main.FindAction("Interact", throwIfNotFound: true);
         m_Main_Look = m_Main.FindAction("Look", throwIfNotFound: true);
         m_Main_Attack = m_Main.FindAction("Attack", throwIfNotFound: true);
+        m_Main_MousePosition = m_Main.FindAction("MousePosition", throwIfNotFound: true);
+        m_Main_QuickSlotOne = m_Main.FindAction("QuickSlotOne", throwIfNotFound: true);
+        m_Main_QuickSlotTwo = m_Main.FindAction("QuickSlotTwo", throwIfNotFound: true);
+        m_Main_QuickSlotThree = m_Main.FindAction("QuickSlotThree", throwIfNotFound: true);
+        m_Main_QuickSlotFour = m_Main.FindAction("QuickSlotFour", throwIfNotFound: true);
+        m_Main_QuickSlotFive = m_Main.FindAction("QuickSlotFive", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -288,6 +414,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Main_Interact;
     private readonly InputAction m_Main_Look;
     private readonly InputAction m_Main_Attack;
+    private readonly InputAction m_Main_MousePosition;
+    private readonly InputAction m_Main_QuickSlotOne;
+    private readonly InputAction m_Main_QuickSlotTwo;
+    private readonly InputAction m_Main_QuickSlotThree;
+    private readonly InputAction m_Main_QuickSlotFour;
+    private readonly InputAction m_Main_QuickSlotFive;
     public struct MainActions
     {
         private @PlayerControls m_Wrapper;
@@ -298,6 +430,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @Interact => m_Wrapper.m_Main_Interact;
         public InputAction @Look => m_Wrapper.m_Main_Look;
         public InputAction @Attack => m_Wrapper.m_Main_Attack;
+        public InputAction @MousePosition => m_Wrapper.m_Main_MousePosition;
+        public InputAction @QuickSlotOne => m_Wrapper.m_Main_QuickSlotOne;
+        public InputAction @QuickSlotTwo => m_Wrapper.m_Main_QuickSlotTwo;
+        public InputAction @QuickSlotThree => m_Wrapper.m_Main_QuickSlotThree;
+        public InputAction @QuickSlotFour => m_Wrapper.m_Main_QuickSlotFour;
+        public InputAction @QuickSlotFive => m_Wrapper.m_Main_QuickSlotFive;
         public InputActionMap Get() { return m_Wrapper.m_Main; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -325,6 +463,24 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Attack.started -= m_Wrapper.m_MainActionsCallbackInterface.OnAttack;
                 @Attack.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnAttack;
                 @Attack.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnAttack;
+                @MousePosition.started -= m_Wrapper.m_MainActionsCallbackInterface.OnMousePosition;
+                @MousePosition.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnMousePosition;
+                @MousePosition.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnMousePosition;
+                @QuickSlotOne.started -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotOne;
+                @QuickSlotOne.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotOne;
+                @QuickSlotOne.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotOne;
+                @QuickSlotTwo.started -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotTwo;
+                @QuickSlotTwo.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotTwo;
+                @QuickSlotTwo.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotTwo;
+                @QuickSlotThree.started -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotThree;
+                @QuickSlotThree.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotThree;
+                @QuickSlotThree.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotThree;
+                @QuickSlotFour.started -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFour;
+                @QuickSlotFour.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFour;
+                @QuickSlotFour.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFour;
+                @QuickSlotFive.started -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFive;
+                @QuickSlotFive.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFive;
+                @QuickSlotFive.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFive;
             }
             m_Wrapper.m_MainActionsCallbackInterface = instance;
             if (instance != null)
@@ -347,6 +503,24 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Attack.started += instance.OnAttack;
                 @Attack.performed += instance.OnAttack;
                 @Attack.canceled += instance.OnAttack;
+                @MousePosition.started += instance.OnMousePosition;
+                @MousePosition.performed += instance.OnMousePosition;
+                @MousePosition.canceled += instance.OnMousePosition;
+                @QuickSlotOne.started += instance.OnQuickSlotOne;
+                @QuickSlotOne.performed += instance.OnQuickSlotOne;
+                @QuickSlotOne.canceled += instance.OnQuickSlotOne;
+                @QuickSlotTwo.started += instance.OnQuickSlotTwo;
+                @QuickSlotTwo.performed += instance.OnQuickSlotTwo;
+                @QuickSlotTwo.canceled += instance.OnQuickSlotTwo;
+                @QuickSlotThree.started += instance.OnQuickSlotThree;
+                @QuickSlotThree.performed += instance.OnQuickSlotThree;
+                @QuickSlotThree.canceled += instance.OnQuickSlotThree;
+                @QuickSlotFour.started += instance.OnQuickSlotFour;
+                @QuickSlotFour.performed += instance.OnQuickSlotFour;
+                @QuickSlotFour.canceled += instance.OnQuickSlotFour;
+                @QuickSlotFive.started += instance.OnQuickSlotFive;
+                @QuickSlotFive.performed += instance.OnQuickSlotFive;
+                @QuickSlotFive.canceled += instance.OnQuickSlotFive;
             }
         }
     }
@@ -368,5 +542,11 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnInteract(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
+        void OnMousePosition(InputAction.CallbackContext context);
+        void OnQuickSlotOne(InputAction.CallbackContext context);
+        void OnQuickSlotTwo(InputAction.CallbackContext context);
+        void OnQuickSlotThree(InputAction.CallbackContext context);
+        void OnQuickSlotFour(InputAction.CallbackContext context);
+        void OnQuickSlotFive(InputAction.CallbackContext context);
     }
 }

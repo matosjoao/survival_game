@@ -6,7 +6,7 @@ using TMPro;
 
 public class CraftingRecipeUI : MonoBehaviour
 {
-    [SerializeField] private CraftingRecipeData recipeData;
+    [SerializeField] private CraftingData recipeData;
     [SerializeField] private Image itemIcon;
 
     [SerializeField] private Color canCraftColor;

@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Crafting Recipe", menuName = "New Crafting Recipe")]
-public class CraftingRecipeData : ScriptableObject
+[CreateAssetMenu(fileName = "Crafting", menuName = "New Crafting Recipe")]
+public class CraftingData : ScriptableObject
 {
     public ItemData itemToCraft;
     public ResourceCost[] resourceCosts;

@@ -3,23 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
+using UnityEngine.EventSystems;
 
-public class ItemSlotUI : MonoBehaviour
+public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDropHandler, IDragHandler
 {
     [Header("Properties")]
     [SerializeField] private Button button;
     [SerializeField] private Image icon;
     [SerializeField] private TextMeshProUGUI quantityText;
 
-    private ItemSlot curSlot;
     private Outline outline;
+    private RectTransform rectTransform;
 
-    public bool Equipped { get; private set;}
-    public int Index { get; private set;}
+    [HideInInspector] public bool Equipped { get; private set;}
+    [HideInInspector] public int Index { get; private set;}
+    [HideInInspector] public ItemSlot CurrentItemSlot { get; private set;}
+    [HideInInspector] public event Action<ItemSlotUI> OnItemDroppedOn, OnItemBeginDrag, OnItemEndDrag, OnItemRightMouseClick;
 
     private void Awake() 
     {
         outline = GetComponent<Outline>();
+        rectTransform = GetComponent<RectTransform>();
     }
 
     private void OnEnable() 
@@ -29,7 +34,7 @@ public class ItemSlotUI : MonoBehaviour
 
     public void Set(ItemSlot slot)
     {
-        curSlot = slot;
+        CurrentItemSlot = slot;
 
         icon.gameObject.SetActive(true);
         icon.sprite = slot.item.icon;
@@ -44,16 +49,13 @@ public class ItemSlotUI : MonoBehaviour
 
     public void Clear()
     {
-        curSlot = null;
+        CurrentItemSlot = null;
         
         icon.gameObject.SetActive(false);
         quantityText.text = string.Empty;
-    }
 
-    public void OnButtonClick()
-    {
-        // TODO:: Try to solve this without singleton
-        Inventory.Instance.SelectItem(Index); 
+        icon.gameObject.SetActive(false);
+        icon.sprite = null;
     }
 
     public void SetEquipped(bool value)
@@ -65,4 +67,32 @@ public class ItemSlotUI : MonoBehaviour
     {
         Index = value;
     }
+
+    #region Events
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if(eventData.button == PointerEventData.InputButton.Right)
+        {
+            OnItemRightMouseClick?.Invoke(this);
+        }
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        OnItemBeginDrag?.Invoke(this);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        OnItemEndDrag?.Invoke(this);
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        OnItemDroppedOn?.Invoke(this);
+    }
+
+    public void OnDrag(PointerEventData eventData) {}
+    #endregion
+    
 }

@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using TMPro;
+using System;
 
 public class UIManager : Singleton<UIManager>
 {
@@ -17,15 +19,18 @@ public class UIManager : Singleton<UIManager>
 
     [Header("Player Inventory")]
     [SerializeField] private GameObject inventoryWindow;
-    [SerializeField] private ItemSlotUI[] uiSlots;
-
-    [SerializeField] private GameObject useButton;
-    [SerializeField] private GameObject equipButton;
-    [SerializeField] private GameObject unEquipButton;
-    [SerializeField] private GameObject dropButton;
+    [SerializeField] private RectTransform inventorySlotsParent;
+    [SerializeField] private RectTransform quickSlotsParent;
+    [SerializeField] private ItemSlotUI inventorySlotUIPrefab;
+    [SerializeField] private QuickSlotUI quickSlotUIPrefab;
+    [SerializeField] private MouseFollower inventorySlotUIDraggable;
 
     public UnityEvent onOpenInventory;
     public UnityEvent onCloseInventory;
+    
+    private List<ItemSlotUI> uiSlots = new List<ItemSlotUI>();
+    private List<QuickSlotUI> quickUISlots = new List<QuickSlotUI>();
+    private int currentDraggedItemIndex = -1;
 
     [Header("Player Base Craft")]
     [SerializeField] private TextMeshProUGUI craftItemName;
@@ -36,7 +41,7 @@ public class UIManager : Singleton<UIManager>
 
     [HideInInspector]
     public bool CanLook { get; private set;} = true;
-    
+
     public void ToggleCursor(bool toggle)
     {
         Cursor.lockState = toggle ? CursorLockMode.None : CursorLockMode.Locked;
@@ -84,34 +89,53 @@ public class UIManager : Singleton<UIManager>
         return inventoryWindow.activeInHierarchy;
     }
 
-    public int GetInventorySize()
+    public void InitializeUISlots(int size)
     {
-        return uiSlots.Length;
-    }
-
-    public void ToggleInventoryButtons(ItemType type, int itemIndex)
-    {
-        useButton.SetActive(type == ItemType.Consumable);
-        equipButton.SetActive(type == ItemType.Equipable && !uiSlots[itemIndex].Equipped);
-        unEquipButton.SetActive(type == ItemType.Equipable && uiSlots[itemIndex].Equipped);
-        dropButton.SetActive(true);
-    }
-
-    public void DisableInventoryButtons()
-    {
-        useButton.SetActive(false);
-        equipButton.SetActive(false);
-        unEquipButton.SetActive(false);
-        dropButton.SetActive(false);
-    }
-
-    public void InitializeUISlots(ItemSlot[] slots)
-    {
-        for (int i = 0; i < slots.Length; i++)
+        for (int i = 0; i < size; i++)
         {
-            uiSlots[i].SetIndex(i);
-            uiSlots[i].Clear();
+            ItemSlotUI uiSlot = Instantiate(inventorySlotUIPrefab, Vector3.zero, Quaternion.identity);
+            uiSlot.transform.SetParent(inventorySlotsParent);
+            
+            uiSlot.SetIndex(i);
+            uiSlot.Clear();
+            uiSlots.Add(uiSlot);
+
+            uiSlot.OnItemBeginDrag += HandleItemBeginDrag;
+            uiSlot.OnItemEndDrag += HandleItemEndDrag;
+            uiSlot.OnItemDroppedOn += HandleItemDrop;
+            uiSlot.OnItemRightMouseClick += HandleItemRightClick;
         }
+    }
+
+    private void HandleItemRightClick(ItemSlotUI itemSlotUI)
+    {
+        Debug.Log("Right Click");
+    }
+
+    private void HandleItemDrop(ItemSlotUI itemSlotUI)
+    {
+        // TODO:: Try to solve this without singleton
+        Inventory.Instance.SwapItems(itemSlotUI.Index, currentDraggedItemIndex); 
+    }
+
+    private void HandleItemBeginDrag(ItemSlotUI itemSlotUI)
+    {   
+        // Slot has item
+        if(itemSlotUI.CurrentItemSlot == null)
+            return;
+        
+        // Assign current slot index
+        currentDraggedItemIndex = itemSlotUI.Index;
+
+        // Show draggable slot in mouse position
+        inventorySlotUIDraggable.Toggle(true);
+        inventorySlotUIDraggable.SetData(itemSlotUI.CurrentItemSlot);
+    }
+
+    private void HandleItemEndDrag(ItemSlotUI itemSlotUI)
+    {   
+        inventorySlotUIDraggable.Toggle(false);
+        currentDraggedItemIndex = -1;
     }
 
     public void UpdateInventorySlots(ItemSlot[] slots)
@@ -130,44 +154,60 @@ public class UIManager : Singleton<UIManager>
         }
     }
 
-    public void ToggleEquipUISlot(int index, bool value)
+    #region Quick Slots
+    public void InitializeUIQuickSlots(int size)
     {
-        uiSlots[index].SetEquipped(value);
+        for (int i = 0; i < size; i++)
+        {
+            QuickSlotUI uiSlot = Instantiate(quickSlotUIPrefab, Vector3.zero, Quaternion.identity);
+            uiSlot.transform.SetParent(quickSlotsParent);
+            
+            uiSlot.SetIndex(i);
+            uiSlot.SetPosition();
+            uiSlot.Clear();
+            quickUISlots.Add(uiSlot);
+
+            uiSlot.OnItemDroppedOnQuickSlot += HandleItemDropQuickSlot;
+        }
     }
 
-    public bool IsEquipped(int index)
-    {
-        return uiSlots[index].Equipped;
-    }
-
-    public void OnUseButton()
+    private void HandleItemDropQuickSlot(QuickSlotUI quickSlotUI)
     {
         // TODO:: Try to solve this without singleton
-        Inventory.Instance.OnUseButton(); 
+        Inventory.Instance.AddToQuickSlot(quickSlotUI.Index, currentDraggedItemIndex); 
     }
 
-    public void OnEquipButton()
+    public void UpdateInventoryQuickSlots(QuickItemSlot[] slots)
     {
-        // TODO:: Try to solve this without singleton
-        Inventory.Instance.OnEquipButton();
+        // Update UI Quick Slots
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if(slots[i].item != null)
+            {
+                quickUISlots[i].Set(slots[i]);
+            }
+            else
+            {
+                quickUISlots[i].Clear();
+            }
+        }
     }
 
-    public void OnUnEquipButton()
+    public void SetQuickSlotSelected(int index, bool value)
     {
-        // TODO:: Try to solve this without singleton
-        Inventory.Instance.OnUnEquipButton();
+        quickUISlots[index].SetSelected(value);
     }
 
-    public void OnDropButton()
+    public bool IsQuickSlotSelected(int index)
     {
-        // TODO:: Try to solve this without singleton
-        Inventory.Instance.OnDropButton();
+        return quickUISlots[index].Selected;
     }
+    #endregion
 
     #endregion
 
     #region Player Base Craft
-    public void UpdateCraftInfo(CraftingRecipeData craftItem = null)
+    public void UpdateCraftInfo(CraftingData craftItem = null)
     {   
         if(craftItem != null)
         {
