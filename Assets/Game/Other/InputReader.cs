@@ -9,6 +9,7 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
     public Vector2 MousePosition { get; private set;}
 
     public bool IsAttaking { get; private set;}
+    public bool IsRotating { get; private set;}
 
     public event Action JumpEvent;
     public event Action InteractEvent;
@@ -125,5 +126,17 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
         if(!context.performed){return;}
         // Invoke Interact event
         QuickSlotClick?.Invoke(4);
+    }
+
+    public void OnRotateBuild(InputAction.CallbackContext context)
+    {
+        if(context.performed)
+        {
+            IsRotating = true;
+        }
+        else if(context.canceled)
+        {
+            IsRotating = false;
+        }
     }
 }

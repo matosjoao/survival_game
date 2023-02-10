@@ -1,22 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDropHandler, IDragHandler
 {
     [Header("Properties")]
-    [SerializeField] private Button button;
     [SerializeField] private Image icon;
     [SerializeField] private TextMeshProUGUI quantityText;
 
+    [Header("Components")]
     private Outline outline;
-    private RectTransform rectTransform;
 
-    [HideInInspector] public bool Equipped { get; private set;}
     [HideInInspector] public int Index { get; private set;}
     [HideInInspector] public ItemSlot CurrentItemSlot { get; private set;}
     [HideInInspector] public event Action<ItemSlotUI> OnItemDroppedOn, OnItemBeginDrag, OnItemEndDrag, OnItemRightMouseClick;
@@ -24,27 +20,29 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
     private void Awake() 
     {
         outline = GetComponent<Outline>();
-        rectTransform = GetComponent<RectTransform>();
     }
 
     private void OnEnable() 
     {
-        outline.enabled = Equipped;
+        // TODO:: To delete not need it
+        //outline.enabled = Equipped;
     }
 
     public void Set(ItemSlot slot)
     {
+        // Set current slot
         CurrentItemSlot = slot;
 
+        // Set icon
         icon.gameObject.SetActive(true);
         icon.sprite = slot.item.icon;
 
+        // Set quantity
         quantityText.text = slot.quantity > 1 ? slot.quantity.ToString() : string.Empty;
 
-        if(outline != null)
-        {
-            outline.enabled = Equipped;
-        }
+        // TODO:: To delete not need it
+        //if(outline != null)
+        //    outline.enabled = equipped;
     }
 
     public void Clear()
@@ -52,15 +50,8 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
         CurrentItemSlot = null;
         
         icon.gameObject.SetActive(false);
-        quantityText.text = string.Empty;
-
-        icon.gameObject.SetActive(false);
         icon.sprite = null;
-    }
-
-    public void SetEquipped(bool value)
-    {
-        Equipped = value;
+        quantityText.text = string.Empty;
     }
 
     public void SetIndex(int value)
@@ -94,5 +85,4 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
 
     public void OnDrag(PointerEventData eventData) {}
     #endregion
-    
 }

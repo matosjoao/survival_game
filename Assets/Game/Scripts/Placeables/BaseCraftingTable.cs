@@ -15,7 +15,7 @@ public class BaseCraftingTable : Building, IInteractable
 
 
         // Enable Cursor
-        UIManager.Instance.ToggleCursor(true);
+        // UIManager.Instance.ToggleCursor(true);
     }
     
 }

@@ -134,6 +134,15 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RotateBuild"",
+                    ""type"": ""Button"",
+                    ""id"": ""dd3d7e31-06ba-4a82-ac5f-fdbef76d6e78"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -312,6 +321,17 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""QuickSlotFive"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b34a1f7f-7ff4-462a-84f5-08ccccc491e6"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""RotateBuild"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -349,6 +369,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Main_QuickSlotThree = m_Main.FindAction("QuickSlotThree", throwIfNotFound: true);
         m_Main_QuickSlotFour = m_Main.FindAction("QuickSlotFour", throwIfNotFound: true);
         m_Main_QuickSlotFive = m_Main.FindAction("QuickSlotFive", throwIfNotFound: true);
+        m_Main_RotateBuild = m_Main.FindAction("RotateBuild", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -420,6 +441,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Main_QuickSlotThree;
     private readonly InputAction m_Main_QuickSlotFour;
     private readonly InputAction m_Main_QuickSlotFive;
+    private readonly InputAction m_Main_RotateBuild;
     public struct MainActions
     {
         private @PlayerControls m_Wrapper;
@@ -436,6 +458,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @QuickSlotThree => m_Wrapper.m_Main_QuickSlotThree;
         public InputAction @QuickSlotFour => m_Wrapper.m_Main_QuickSlotFour;
         public InputAction @QuickSlotFive => m_Wrapper.m_Main_QuickSlotFive;
+        public InputAction @RotateBuild => m_Wrapper.m_Main_RotateBuild;
         public InputActionMap Get() { return m_Wrapper.m_Main; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -481,6 +504,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @QuickSlotFive.started -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFive;
                 @QuickSlotFive.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFive;
                 @QuickSlotFive.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnQuickSlotFive;
+                @RotateBuild.started -= m_Wrapper.m_MainActionsCallbackInterface.OnRotateBuild;
+                @RotateBuild.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnRotateBuild;
+                @RotateBuild.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnRotateBuild;
             }
             m_Wrapper.m_MainActionsCallbackInterface = instance;
             if (instance != null)
@@ -521,6 +547,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @QuickSlotFive.started += instance.OnQuickSlotFive;
                 @QuickSlotFive.performed += instance.OnQuickSlotFive;
                 @QuickSlotFive.canceled += instance.OnQuickSlotFive;
+                @RotateBuild.started += instance.OnRotateBuild;
+                @RotateBuild.performed += instance.OnRotateBuild;
+                @RotateBuild.canceled += instance.OnRotateBuild;
             }
         }
     }
@@ -548,5 +577,6 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnQuickSlotThree(InputAction.CallbackContext context);
         void OnQuickSlotFour(InputAction.CallbackContext context);
         void OnQuickSlotFive(InputAction.CallbackContext context);
+        void OnRotateBuild(InputAction.CallbackContext context);
     }
 }

@@ -2,21 +2,20 @@ using UnityEngine;
 
 public class InteractionManager : MonoBehaviour
 {
-    [Header("Components")]
-    [SerializeField] private InputReader inputReader;
-    [SerializeField] private Inventory inventory;
-
-
     [Header("Properties")]
     [SerializeField] private float checkRate = 0.05f;
     [SerializeField] private float maxCheckDistance;
     [SerializeField] private LayerMask layerMask;
 
+    [Header("Components")]
+    private InputReader inputReader;
+    private PlayerController playerController;
+    private Transform cameraTransform;
+
     private float lastCheckTime;
     private GameObject curInteractGameObject;
     private IInteractable curInteractable;
-    private Camera cam;
-    private Transform cameraTransform;
+   
 
     private void OnEnable() 
     {
@@ -28,24 +27,33 @@ public class InteractionManager : MonoBehaviour
         inputReader.InteractEvent -= OnInteract;
     }
 
+    private void Awake() 
+    {
+        inputReader = GetComponent<InputReader>();
+        playerController = GetComponent<PlayerController>();
+    }
+
     private void Start() 
     {
-        cam = Camera.main;
-
-        cameraTransform = cam.gameObject.transform;
+        cameraTransform = Camera.main.gameObject.transform;
     }
 
     private void Update() 
-    {
+    {   
+        // If can't interact return
+        if(!UIManager.Instance.CanInteract)
+            return;
+
         if(Time.time - lastCheckTime > checkRate)
         {
             lastCheckTime = Time.time;
 
-            Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-            RaycastHit hit;
-
+            // Old version to delete
+            //Ray ray = mainCam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+            //RaycastHit hit;
             //if(Physics.Raycast(ray, out hit, maxCheckDistance, layerMask))
-            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, maxCheckDistance, layerMask))
+
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hit, maxCheckDistance, layerMask))
             {
                 if(hit.collider.gameObject != curInteractGameObject)
                 {
@@ -70,19 +78,15 @@ public class InteractionManager : MonoBehaviour
 
     private void OnInteract()
     {
+        // If dont exist current interactable
         if(curInteractable == null) return;
         
-        // TODO:: Delete - Course way
+        // If can't interact return
+        if(!UIManager.Instance.CanInteract)
+            return;
+
+        // Interact
         curInteractable.OnInteract();
-
-        /* // Get current interacted object ItemObject component
-        ItemObject itemObject = curInteractGameObject.GetComponent<ItemObject>();
-
-        // TODO:: Improve change to pool
-        Destroy(curInteractGameObject);
-
-        // Try add item to inventory
-        inventory.AddItem(itemObject.Item); */
 
         // Reset interaction
         curInteractGameObject = null;

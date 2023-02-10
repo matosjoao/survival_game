@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1066042522990025843}
   - component: {fileID: 7843768021892266092}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Building_Bed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,7 +57,7 @@ GameObject:
   - component: {fileID: 7147674075743736263}
   - component: {fileID: 6097443054018780770}
   - component: {fileID: 8321120968473225896}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Bed
   m_TagString: Untagged
   m_Icon: {fileID: 0}

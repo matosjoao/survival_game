@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(InputReader))]
+[RequireComponent(typeof(PlayerController))]
 public class EquipManager : MonoBehaviour
 {
     [Header("Properties")]
@@ -11,6 +12,7 @@ public class EquipManager : MonoBehaviour
     [Header("Components")]
     private InputReader inputReader;
     private AnimatorManager animatorManager;
+    private PlayerController playerController;
 
     private Equip currentEquip;
     private bool attacking;
@@ -19,6 +21,7 @@ public class EquipManager : MonoBehaviour
     {
         animatorManager = GetComponent<AnimatorManager>();
         inputReader = GetComponent<InputReader>();
+        playerController = GetComponent<PlayerController>();
     }
 
     private void Update() {
@@ -53,7 +56,7 @@ public class EquipManager : MonoBehaviour
 
     private void OnAltAttackInput()
     {
-        if(currentEquip != null && UIManager.Instance.CanLook)
+        if(currentEquip != null && playerController.CanLook)
         {
 
         }

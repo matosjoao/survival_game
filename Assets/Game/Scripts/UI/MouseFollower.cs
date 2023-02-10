@@ -2,11 +2,16 @@ using UnityEngine;
 
 public class MouseFollower : MonoBehaviour
 {
+    [Header("Properties")]
     [SerializeField] private Canvas canvas;
     [SerializeField] private ItemSlotUI item;
 
+    [Header("Components")]
     private Camera mainCam;
     private InputReader inputReader;
+
+    [HideInInspector] public bool IsInventory { get; private set;} 
+    [HideInInspector] public ItemSlotUI UISlot => item;
 
     private void Awake() 
     {
@@ -17,7 +22,10 @@ public class MouseFollower : MonoBehaviour
     private void OnEnable() 
     {
         // Clear old data
-        item.Clear();
+        if(item != null)
+            item.Clear();
+        
+        IsInventory = false;
 
         // Update to recent position
         UpdateSlotPosition();
@@ -42,9 +50,10 @@ public class MouseFollower : MonoBehaviour
         transform.position = canvas.transform.TransformPoint(position);
     }
 
-    public void SetData(ItemSlot slot)
+    public void SetData(ItemSlot slot, bool isInventory = true)
     {
         item.Set(slot);
+        IsInventory = isInventory;
     }
 
     public void Toggle(bool visible = false)

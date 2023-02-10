@@ -16,5 +16,3 @@ MonoBehaviour:
   resourceCosts:
   - item: {fileID: 11400000, guid: 3dc0a4cfab5b2134795066547c46bccf, type: 2}
     quantity: 5
-  - item: {fileID: 11400000, guid: 7d59a3c1663d4174284e344673e18e25, type: 2}
-    quantity: 1

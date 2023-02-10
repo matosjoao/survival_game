@@ -2365,12 +2365,13 @@ GameObject:
   - component: {fileID: 8620810321868813286}
   - component: {fileID: 8620810321868813292}
   - component: {fileID: 8620810321868813293}
-  - component: {fileID: 8620810321868813287}
   - component: {fileID: 8620810321868813290}
+  - component: {fileID: 8620810321868813287}
   - component: {fileID: 8620810321868813288}
   - component: {fileID: 8620810321868813289}
   - component: {fileID: 4085574588228539228}
   - component: {fileID: 8566963029642843405}
+  - component: {fileID: 8966589507564792034}
   m_Layer: 6
   m_Name: PlayerBase
   m_TagString: Player
@@ -2473,13 +2474,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f958fb69ca206c42ae2748ba869d741, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputReader: {fileID: 8620810321868813292}
-  playerRigidbody: {fileID: 8620810321868813294}
   freeLookMovementSpeed: 5
   jumpForce: 80
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 951
+    m_Bits: 1975
   groundedRadius: 0.2
   groundedOffset: -0.15
   rotationDamping: 5
@@ -2489,20 +2488,6 @@ MonoBehaviour:
   cameraAngleOverride: 0
   baseSensitivity: 0.12
   lookSensitivity: 1
---- !u!114 &8620810321868813287
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8620810321868813200}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed86ea0a79343f448b1f5bc986018b7c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputReader: {fileID: 8620810321868813292}
-  animator: {fileID: 8620810321868813286}
 --- !u!114 &8620810321868813290
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2535,6 +2520,20 @@ MonoBehaviour:
     decayRate: 2
   noHungerHealthDecay: 1
   noThirstHealthDecay: 1
+--- !u!114 &8620810321868813287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8620810321868813200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed86ea0a79343f448b1f5bc986018b7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputReader: {fileID: 8620810321868813292}
+  animator: {fileID: 8620810321868813286}
 --- !u!114 &8620810321868813288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2566,12 +2565,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7972d3b616f5c444aac054c9c05e9cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputReader: {fileID: 8620810321868813292}
-  playerNeeds: {fileID: 8620810321868813290}
-  equipManager: {fileID: 4085574588228539228}
   dropPosition: {fileID: 2118218093415190128}
-  inventorySize: 10
+  dropPrefab: {fileID: 523421425528299448, guid: d3a22754c38a6f64f961ae1b211dc037, type: 3}
+  inventorySize: 15
   quickAccessBarSize: 5
+  slots: []
+  quickSlots: []
 --- !u!114 &4085574588228539228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2597,6 +2596,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d93520ef5a2d250498e4a3e4ee82d3bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8966589507564792034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8620810321868813200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e5fc421d4f337740a576b78e9816043, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  placementUpdateRate: 0.03
+  placementMaxDistance: 5
+  placementLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  rotationSpeed: 180
 --- !u!1 &8754169718850882695
 GameObject:
   m_ObjectHideFlags: 0

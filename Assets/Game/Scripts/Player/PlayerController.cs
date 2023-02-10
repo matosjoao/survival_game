@@ -1,11 +1,9 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(InputReader))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Components")]
-    [SerializeField] private InputReader inputReader;
-    [SerializeField] private Rigidbody playerRigidbody;
-
     [Header("Movement")]
     [SerializeField] private float freeLookMovementSpeed;
     [SerializeField] private float jumpForce;
@@ -22,15 +20,24 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float baseSensitivity = .12f;
     [SerializeField] private float lookSensitivity = 1.0f;
     
-    /* [HideInInspector]
-    public bool CanLook { get; private set;} = true; */
-
+    [Header("Components")]
+    private InputReader inputReader;
+    private Rigidbody playerRigidbody;
+    
+    [HideInInspector] public bool CanLook { get; private set;} = true;
+    [HideInInspector] public bool CanInteract { get; private set;} = true;
+    
     private float cinemachineTargetYaw;
     private float cinemachineTargetPitch;
     private const float threshold = 0.01f;
-
     private Transform mainCameraTransform;
 
+    private void Awake() 
+    {
+        // Get components
+        inputReader = GetComponent<InputReader>();
+        playerRigidbody = GetComponent<Rigidbody>();
+    }
     private void OnEnable() 
     {
         // Subscribe to events
@@ -141,11 +148,16 @@ public class PlayerController : MonoBehaviour
         return Physics.CheckSphere(spherePosition, groundedRadius, groundLayerMask, QueryTriggerInteraction.Ignore);
     }
 
-    /* public void ToggleCursor(bool toggle)
+    public void ToggleCursor(bool toggle)
     {
         Cursor.lockState = toggle ? CursorLockMode.None : CursorLockMode.Locked;
         CanLook = !toggle;
-    } */
+    }
+
+    public void ToggleInteract(bool value = false)
+    {
+        CanInteract = value;
+    }
 
     private void OnDrawGizmos() 
     {
