@@ -11,10 +11,15 @@ public class ItemObject : MonoBehaviour, IInteractable
         return string.Format("Pickup {0}", itemData.displayName);
     }
 
-    public void OnInteract()
+    public void OnInteract(PlayerController playerController)
     {
+        // Get Inventory
+        Inventory pInventory = playerController.GetComponent<Inventory>();
+        if(pInventory == null)
+            return;
+
         // Try add item to inventory
-        Inventory.Instance.AddItem(itemData);
+        pInventory.AddItem(itemData);
 
         // TODO:: Improve change to pool
         Destroy(gameObject);

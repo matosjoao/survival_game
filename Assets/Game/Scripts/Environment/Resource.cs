@@ -18,6 +18,7 @@ public class Resource : MonoBehaviour
 
             capacity -= 1;
 
+            // TODO:: Change to a if if(inventory.AddItem(selectedItem.itemToCraft))
             Inventory.Instance.AddItem(item);
         }
 

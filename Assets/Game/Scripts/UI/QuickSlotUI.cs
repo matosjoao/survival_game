@@ -33,9 +33,9 @@ public class QuickSlotUI : MonoBehaviour, IDropHandler
         CurrentItemSlot = slot;
 
         icon.gameObject.SetActive(true);
-        icon.sprite = slot.item.icon;
+        icon.sprite = slot.Item.icon;
 
-        quantityText.text = slot.quantity > 1 ? slot.quantity.ToString() : string.Empty;
+        quantityText.text = slot.Quantity > 1 ? slot.Quantity.ToString() : string.Empty;
 
         if(outline != null)
         {
@@ -64,14 +64,13 @@ public class QuickSlotUI : MonoBehaviour, IDropHandler
         Index = value;
     }
     
-    public void OnDrop(PointerEventData eventData)
-    {
-        // TODO:: Validate if comes from inventory or validate type
-        OnItemDroppedOnQuickSlot?.Invoke(this);
-    }
-
     public void SetPosition()
     {
         quickSlotPosition.text = (Index+1).ToString();
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        OnItemDroppedOnQuickSlot?.Invoke(this);
     }
 }

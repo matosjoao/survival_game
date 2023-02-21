@@ -41,7 +41,7 @@ public class InteractionManager : MonoBehaviour
     private void Update() 
     {   
         // If can't interact return
-        if(!UIManager.Instance.CanInteract)
+        if(playerController.IsInteracting)
             return;
 
         if(Time.time - lastCheckTime > checkRate)
@@ -82,11 +82,11 @@ public class InteractionManager : MonoBehaviour
         if(curInteractable == null) return;
         
         // If can't interact return
-        if(!UIManager.Instance.CanInteract)
+        if(playerController.IsInteracting)
             return;
 
         // Interact
-        curInteractable.OnInteract();
+        curInteractable.OnInteract(playerController);
 
         // Reset interaction
         curInteractGameObject = null;
@@ -99,5 +99,5 @@ public class InteractionManager : MonoBehaviour
 public interface IInteractable 
 {
     string GetInteractPrompt();
-    void OnInteract();
+    void OnInteract(PlayerController playerController);
 }

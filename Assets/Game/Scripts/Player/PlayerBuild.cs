@@ -90,7 +90,7 @@ public class PlayerBuild : MonoBehaviour
         Instantiate(curItemData.spawnPrefab, curBuildingPreview.transform.position, curBuildingPreview.transform.rotation);
 
         // Remove from inventory
-        inventory.ReduceInventoryQuantity();
+        inventory.OnActionReduceSelectedItemQuantity();
           
         // Reset 
         ResetData();

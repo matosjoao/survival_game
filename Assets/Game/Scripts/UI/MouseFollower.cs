@@ -21,14 +21,17 @@ public class MouseFollower : MonoBehaviour
     
     private void OnEnable() 
     {
+        // Update to recent position
+        UpdateSlotPosition();
+    }
+
+    private void OnDisable() 
+    {
         // Clear old data
         if(item != null)
             item.Clear();
         
         IsInventory = false;
-
-        // Update to recent position
-        UpdateSlotPosition();
     }
 
     private void Update() 
@@ -50,9 +53,11 @@ public class MouseFollower : MonoBehaviour
         transform.position = canvas.transform.TransformPoint(position);
     }
 
-    public void SetData(ItemSlot slot, bool isInventory = true)
+    public void SetData(ItemSlot slot, int index, bool isInventory = true)
     {
         item.Set(slot);
+        item.SetIndex(index);
+
         IsInventory = isInventory;
     }
 

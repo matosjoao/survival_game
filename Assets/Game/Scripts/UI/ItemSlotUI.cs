@@ -4,30 +4,15 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDropHandler, IDragHandler
+public class ItemSlotUI : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDropHandler, IDragHandler
 {
     [Header("Properties")]
     [SerializeField] private Image icon;
     [SerializeField] private TextMeshProUGUI quantityText;
 
-    [Header("Components")]
-    private Outline outline;
-
     [HideInInspector] public int Index { get; private set;}
     [HideInInspector] public ItemSlot CurrentItemSlot { get; private set;}
-    [HideInInspector] public event Action<ItemSlotUI> OnItemDroppedOn, OnItemBeginDrag, OnItemEndDrag, OnItemRightMouseClick;
-
-    private void Awake() 
-    {
-        outline = GetComponent<Outline>();
-    }
-
-    private void OnEnable() 
-    {
-        // TODO:: To delete not need it
-        //outline.enabled = Equipped;
-    }
-
+    [HideInInspector] public event Action<ItemSlotUI> OnItemDroppedOn, OnItemBeginDrag, OnItemEndDrag;
     public void Set(ItemSlot slot)
     {
         // Set current slot
@@ -35,14 +20,10 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
 
         // Set icon
         icon.gameObject.SetActive(true);
-        icon.sprite = slot.item.icon;
+        icon.sprite = slot.Item.icon;
 
         // Set quantity
-        quantityText.text = slot.quantity > 1 ? slot.quantity.ToString() : string.Empty;
-
-        // TODO:: To delete not need it
-        //if(outline != null)
-        //    outline.enabled = equipped;
+        quantityText.text = slot.Quantity > 1 ? slot.Quantity.ToString() : string.Empty;
     }
 
     public void Clear()
@@ -59,15 +40,27 @@ public class ItemSlotUI : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
         Index = value;
     }
 
-    #region Events
-    public void OnPointerClick(PointerEventData eventData)
+    public void AddToStorageFromInventory(int invIndex)
     {
-        if(eventData.button == PointerEventData.InputButton.Right)
-        {
-            OnItemRightMouseClick?.Invoke(this);
-        }
+        EventBus.Instance.Publish("AddToStorageFromInventory", new SwapItemsModel(Index, invIndex));
     }
 
+    public void SwapStorage(int stoIndex)
+    {
+        EventBus.Instance.Publish("SwapStorage", new SwapItemsModel(Index, stoIndex));
+
+        //CurrentItemSlot.ItemSlotSwappedInBag(swapItem);
+    }
+
+    public void DropToBag(ItemSlot swapItem)
+    {
+        if(CurrentItemSlot == null)
+            return;
+
+        //CurrentItemSlot.ItemSlotDropInBag(swapItem);
+    }
+
+    #region Events
     public void OnBeginDrag(PointerEventData eventData)
     {
         OnItemBeginDrag?.Invoke(this);

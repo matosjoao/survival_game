@@ -1,10 +1,10 @@
 using UnityEngine;
 
-public class BaseCraftingTable : Building, IInteractable
+public class BaseCraftingTable : Building/* , IInteractable */
 {
     [SerializeField] GameObject craftingWindow;
 
-    public string GetInteractPrompt()
+    /* public string GetInteractPrompt()
     {
         return "Open";
     }
@@ -16,6 +16,6 @@ public class BaseCraftingTable : Building, IInteractable
 
         // Enable Cursor
         // UIManager.Instance.ToggleCursor(true);
-    }
+    } */
     
 }

@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody playerRigidbody;
     
     [HideInInspector] public bool CanLook { get; private set;} = true;
-    [HideInInspector] public bool CanInteract { get; private set;} = true;
+    [HideInInspector] public bool IsInteracting { get; private set;} = false;
     
     private float cinemachineTargetYaw;
     private float cinemachineTargetPitch;
@@ -115,7 +115,7 @@ public class PlayerController : MonoBehaviour
     private void CameraRotation() {
         // If there is an input and camera position is not fixed
         Vector2 lookVector = inputReader.MouseDelta;
-        if (lookVector.sqrMagnitude >= threshold && UIManager.Instance.CanLook) {
+        if (lookVector.sqrMagnitude >= threshold && CanLook) {
             cinemachineTargetYaw += lookVector.x * baseSensitivity * lookSensitivity;
             cinemachineTargetPitch += lookVector.y * baseSensitivity * lookSensitivity * -1;
         }
@@ -156,7 +156,7 @@ public class PlayerController : MonoBehaviour
 
     public void ToggleInteract(bool value = false)
     {
-        CanInteract = value;
+        IsInteracting = value;
     }
 
     private void OnDrawGizmos() 

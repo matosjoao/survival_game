@@ -26,8 +26,8 @@ public class Inventory : Singleton<Inventory>
     private int quickSlotSelectedIndex = -1;
 
     [Header("Items")]
-    public ItemSlot[] slots;
-    public QuickItemSlot[] quickSlots;
+    private ItemSlot[] slots;
+    private QuickItemSlot[] quickSlots;
 
     [Header("Dropped Bag")]
     private DroppedBag droppedBag;
@@ -48,6 +48,9 @@ public class Inventory : Singleton<Inventory>
         inputReader.InventoryEvent += OnInventory;
         inputReader.QuickSlotClick += OnQuickSlotClick;
         inputReader.MouseClickEvent += OnMouseClickEvent;
+
+        EventBus.Instance.Subscribe("SwapItems", SwapItems);
+        EventBus.Instance.Subscribe("AddToQuickSlot", AddToQuickSlot);
     }
 
     private void OnDisable() 
@@ -56,6 +59,9 @@ public class Inventory : Singleton<Inventory>
         inputReader.InventoryEvent -= OnInventory;
         inputReader.QuickSlotClick -= OnQuickSlotClick;
         inputReader.MouseClickEvent -= OnMouseClickEvent;
+
+        EventBus.Instance.Unsubscribe("SwapItems", SwapItems);
+        EventBus.Instance.Unsubscribe("AddToQuickSlot", AddToQuickSlot);
     }
 
     private void Start() 
@@ -88,48 +94,81 @@ public class Inventory : Singleton<Inventory>
 
     private void OnDestroy() 
     {
-        // TODO:: Unsubscribe to uislots events in UIMANAGER
+        UIManager.Instance.UnsubscribeSlotsEvents();
     }
 
+    #region  Inventory
     private void OnInventory()
     {
         // Called onClick Tab to inventory
         if(UIManager.Instance.IsInventoryOpen())
         {
+            // Close inventory
             UIManager.Instance.ToggleInventoryWindow();
-            UIManager.Instance.ToggleCursor(false);
+
+            // Toggle cursor to false
+            playerController.ToggleCursor(false);
+
+            // Toggle IsInteraction to false
+            playerController.ToggleInteract(false);
 
             // Toggle Bag UI
-            ItemsSlotsUI.Instance.Toogle();
-            // Toggle Interaction
-            UIManager.Instance.ToggleInteract(true);
+            StorageUI.Instance.Toogle();
+            StorageUI.Instance.SetIsInteractingWithBag();
         }
         else
         {
-            UIManager.Instance.ToggleCursor(true);
+            // Open inventory
             UIManager.Instance.ToggleInventoryWindow(true);
+
+            // Toggle cursor to true
+            playerController.ToggleCursor(true);
+
+            // Toggle IsInteraction to true
+            playerController.ToggleInteract(true);
         }
     }
 
-    public void AddItem(ItemData item)
+    private void OnMouseClickEvent()
+    {
+        if(selectedItemIndex == -1)
+            return;
+
+        // Has selected item ? 
+        ItemSlot itemSlot = slots[selectedItemIndex];
+
+        if(itemSlot.Item == null || playerController.IsInteracting)
+            return;
+
+        // Is consumable type
+        if(itemSlot.Item.type == ItemType.Consumable)
+        {
+            OnConsume(itemSlot);
+        }
+        else if(itemSlot.Item.type == ItemType.Building)
+        {
+            Build();
+        }
+    }
+
+    public bool AddItem(ItemData item)
     {
         // Add item to inventory
 
         // Can stack
         if(item.canStack)
         {
-            ItemSlot slotToStackTo = GetItemStack(item);
-            if(slotToStackTo != null)
+            // Get item inventory position
+            int slotToStackToPos = GetItemStackPosition(item);
+            if(slotToStackToPos != -1)
             {
-                slotToStackTo.quantity++;
-
-                // Get item inventory position
-                int slotPos = GetItemStackPosition(item);
+                slots[slotToStackToPos].AddQuantity(1);
+                
                 // Item in quick slot?
-                int quickSlotItemPos = IsItemInQuickSlots(slotPos);
+                int quickSlotItemPos = IsItemInQuickSlots(slotToStackToPos);
                 if(quickSlotItemPos != -1)
                 {
-                    quickSlots[quickSlotItemPos].quantity++;
+                    quickSlots[quickSlotItemPos].AddQuantity(1);
 
                     // Update Quick UI Slots
                     UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
@@ -137,7 +176,7 @@ public class Inventory : Singleton<Inventory>
 
                 // Update UI Slots
                 UIManager.Instance.UpdateInventorySlots(slots);
-                return;
+                return true;
             }
         }
 
@@ -145,74 +184,125 @@ public class Inventory : Singleton<Inventory>
         int emptySlotPos = GetEmptySlotPosition();
         if(emptySlotPos != -1)
         {
-            slots[emptySlotPos].item = item;
-            slots[emptySlotPos].quantity = 1;
+            slots[emptySlotPos].UpdateSlot(item, 1);
 
             // Update UI Slots
             UIManager.Instance.UpdateInventorySlots(slots);
-            return;
+            return true;
         }
 
-        // TODO:: Improve maybe dont get it if can't stack and no empty slot
-        //ThrowItem(item);
+        return false;
     }
 
-    public void SwapItems(int toSwapIndex, int swapIndex)
+    public void SwapItems(object data)
     {
         // Swap items in inventory
+        
+        SwapItemsModel eventData = data as SwapItemsModel;
+
+        int toSwapIndex = eventData.targetPosition;
+        int swapIndex = eventData.draggablePosition;
 
         // Is index valid
         if(slots[toSwapIndex] == null || slots[swapIndex] == null)
             return;
 
-        // TODO:: Check if is the same item type and join
-
-        // Is swap item in quick slot ?
-        int quickSlotSwapItemPos = IsItemInQuickSlots(swapIndex);
-        if(quickSlotSwapItemPos != -1)
+        // Is the same type and can stack?
+        if(slots[toSwapIndex].Item == slots[swapIndex].Item && slots[swapIndex].Item.canStack && slots[toSwapIndex].RoomLeftInStack(slots[swapIndex].Quantity, out int roomLeftQuantity))
         {
-            // To swap slot has item
-            if(slots[toSwapIndex].item != null)
+            // Calculate quantity to add
+            int quantityToAdd = Mathf.Min(roomLeftQuantity, slots[swapIndex].Quantity);
+
+            // Exchange quantities
+            slots[toSwapIndex].AddQuantity(quantityToAdd);
+            slots[swapIndex].RemoveQuantity(quantityToAdd);
+
+            // Quick Slot To Swap item
+            int quickSlotToSwapItemPos = IsItemInQuickSlots(toSwapIndex);
+            if(quickSlotToSwapItemPos != -1)
             {
-                // Is to swap item in quick slot ?
-                int quickSlotToSwapItemPos = IsItemInQuickSlots(toSwapIndex);
-                if(quickSlotToSwapItemPos != -1)
-                {
-                    quickSlots[quickSlotToSwapItemPos].itemSlotPosition  = swapIndex;
-                }
+                quickSlots[quickSlotToSwapItemPos].AddQuantity(quantityToAdd);
             }
 
-            quickSlots[quickSlotSwapItemPos].itemSlotPosition  = toSwapIndex;
+            // Quick Slot Swap item
+            int quickSlotSwapItemPos = IsItemInQuickSlots(swapIndex);
+            if(quickSlotSwapItemPos != -1)
+            {
+                quickSlots[quickSlotSwapItemPos].RemoveQuantity(quantityToAdd);
+            }
+
+            // Has quantity in slot?
+            if(slots[swapIndex].Quantity == 0)
+            {
+                // If is in quick slot
+                if(quickSlotSwapItemPos != -1)
+                {
+                    // Is the selected item
+                    if(swapIndex == selectedItemIndex)
+                    {
+                        ClearSelectedItem();
+                    }
+
+                    quickSlots[quickSlotSwapItemPos].ClearSlot();
+                }
+
+                // Clear Slot
+                slots[swapIndex].ClearSlot();
+            }
         }
         else
         {
-            // To swap slot has item
-            if(slots[toSwapIndex].item != null)
+            // Is swap item in quick slot ?
+            int quickSlotSwapItemPos = IsItemInQuickSlots(swapIndex);
+            if(quickSlotSwapItemPos != -1)
             {
-                // Is to swap item in quick slot ?
-                int quickSlotToSwapItemPos = IsItemInQuickSlots(toSwapIndex);
-                if(quickSlotToSwapItemPos != -1)
+                // To swap slot has item
+                if(slots[toSwapIndex].Item != null)
                 {
-                    quickSlots[quickSlotToSwapItemPos].itemSlotPosition  = swapIndex;
+                    // Is to swap item in quick slot ?
+                    int quickSlotToSwapItemPos = IsItemInQuickSlots(toSwapIndex);
+                    if(quickSlotToSwapItemPos != -1)
+                    {
+                        quickSlots[quickSlotToSwapItemPos].SetItemSlotPosition(swapIndex);
+                    }
+                }
+
+                quickSlots[quickSlotSwapItemPos].SetItemSlotPosition(toSwapIndex);
+            }
+            else
+            {
+                // To swap slot has item
+                if(slots[toSwapIndex].Item != null)
+                {
+                    // Is to swap item in quick slot ?
+                    int quickSlotToSwapItemPos = IsItemInQuickSlots(toSwapIndex);
+                    if(quickSlotToSwapItemPos != -1)
+                    {
+                        quickSlots[quickSlotToSwapItemPos].SetItemSlotPosition(swapIndex);
+                    }
                 }
             }
-        }
 
-        // Swap slots
-        ItemSlot item1 = slots[swapIndex];
-        slots[swapIndex] = slots[toSwapIndex];
-        slots[toSwapIndex] = item1;
+            // Swap slots
+            ItemSlot item1 = slots[swapIndex];
+            slots[swapIndex] = slots[toSwapIndex];
+            slots[toSwapIndex] = item1;
+        }
 
         // Update inventory ui slots
         UIManager.Instance.UpdateInventorySlots(slots);
-    }
 
+        // Update Quick Slots
+        UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
+    }
+    
     public void DropItem(int index)
     {
         // Is index valid
-        if(slots[index] == null || slots[index].item == null)
+        if(slots[index] == null || slots[index].Item == null)
             return;
         
+        // TODO:: Improve Se sair da zona do dropped bag chamar evento para colocar o dropped ba a null
         // Drop a bag
         if(droppedBag == null)
         {
@@ -222,38 +312,152 @@ public class Inventory : Singleton<Inventory>
         if(droppedBag.CanAddItem())
         {
             // Add item to dropped bag
-            droppedBag.AddItem(slots[index].item, slots[index].quantity);
+            droppedBag.AddItem(slots[index].Item, slots[index].Quantity);
 
-            // Clear in slots
-            slots[index].item = null;
-            slots[index].quantity = 0;
+            // Remove item from inventory
+            RemoveItem(index);
+        }
+    }
 
-            // If is in quick slot
-            int quickSlotItemPos = IsItemInQuickSlots(index);
+    public void RemoveItem(int index)
+    {
+        // Is index valid
+        if(slots[index] == null || slots[index].Item == null)
+            return;
+        
+        // Clear in slots
+        slots[index].ClearSlot();
 
+        // If is in quick slot
+        int quickSlotItemPos = IsItemInQuickSlots(index);
+        if(quickSlotItemPos != -1)
+        {
             // Is the selected item
             if(index == selectedItemIndex)
             {
                 ClearSelectedItem();
             }
-            
-            if(quickSlotItemPos != -1)
-            {
-                quickSlots[quickSlotItemPos].item = null;
-                quickSlots[quickSlotItemPos].quantity = 0;
-                quickSlots[quickSlotItemPos].itemSlotPosition = 0;
-            }
 
-            // Update UI Slots
-            UIManager.Instance.UpdateInventorySlots(slots);
+            quickSlots[quickSlotItemPos].ClearSlot();
+        }
 
-            // Update Quick Slots
+        // Update UI Slots
+        UIManager.Instance.UpdateInventorySlots(slots);
+
+        // Update Quick Slots
+        if(quickSlotItemPos != -1)
+        {
             UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
         }
     }
 
+    public void UpdateSlotQuantity(int index, int amount)
+    {
+        // Is index valid
+        if(slots[index] == null || slots[index].Item == null)
+            return;
+
+        // Remove quantity from slots
+        slots[index].RemoveQuantity(amount);
+
+        // If is in quick slot
+        int quickSlotItemPos = IsItemInQuickSlots(index);
+        if(quickSlotItemPos != -1)
+        {
+            quickSlots[quickSlotItemPos].RemoveQuantity(amount);
+        }
+
+        // Has quantity in slot?
+        if(slots[index].Quantity == 0)
+        {
+            // If is in quick slot
+            if(quickSlotItemPos != -1)
+            {
+                // Is the selected item
+                if(index == selectedItemIndex)
+                {
+                    ClearSelectedItem();
+                }
+
+                quickSlots[quickSlotItemPos].ClearSlot();
+            }
+
+            // Clear Slot
+            slots[index].ClearSlot();
+        }
+
+        // Update UI Slots
+        UIManager.Instance.UpdateInventorySlots(slots);
+
+        // Update Quick Slots
+        if(quickSlotItemPos != -1)
+        {
+            UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
+        }
+    }
+
+    public void UpdateSlot(ItemSlot itemSlot, int index)
+    {
+        // Is index valid
+        if(slots[index] == null)
+            return;
+
+        // Update slot
+        slots[index].UpdateSlot(itemSlot.Item, itemSlot.Quantity);
+
+        // If is in quick slot
+        int quickSlotItemPos = IsItemInQuickSlots(index);
+        if(quickSlotItemPos != -1)
+        {
+            // New item can be in quick slots
+            if(itemSlot.Item.type == ItemType.Resource)
+            {
+                // Is the selected item
+                if(index == selectedItemIndex)
+                {
+                    ClearSelectedItem();
+                }
+
+                quickSlots[quickSlotItemPos].ClearSlot();
+            }
+            else
+            {
+                // Is the selected item
+                if(index == selectedItemIndex)
+                {
+                    SelectItem(index, quickSlotItemPos);
+
+                    // New item is equipable
+                    if(itemSlot.Item.type == ItemType.Equipable)
+                        Equip();
+
+                    // New item is building
+                    if(itemSlot.Item.type == ItemType.Building)
+                        StartBuilding();
+                }
+
+                // Update quick slot
+                quickSlots[quickSlotItemPos].UpdateSlot(itemSlot.Item, itemSlot.Quantity);
+            }
+        }
+
+        // Update UI Slots
+        UIManager.Instance.UpdateInventorySlots(slots);
+
+        // Update Quick Slots
+        if(quickSlotItemPos != -1)
+        {
+            UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
+        }
+    }
+    #endregion
+
+    /* 
     public void AddItemFromBag(int toSwapIndex, ItemSlot bagSlot)
     {
+        // deviamos colocar a vir o objeto que estamos a interagir pois pode ser um safe ou o drop bag e podemos ter de descontar lá a quantidade
+
+        Debug.Log("Entrou");
         // Is index valid
         if(slots[toSwapIndex] == null)
             return;
@@ -533,30 +737,7 @@ public class Inventory : Singleton<Inventory>
 
         // Update Quick UI Slots
         UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
-    }
-
-    private void OnMouseClickEvent()
-    {
-        if(selectedItemIndex == -1)
-            return;
-
-        // Has selected item ? 
-        ItemSlot itemSlot = slots[selectedItemIndex];
-
-        if(itemSlot.item == null || !UIManager.Instance.CanLook)
-            return;
-
-        // Is consumable type
-        if(itemSlot.item.type == ItemType.Consumable)
-        {
-            OnConsume(itemSlot);
-        }
-        else if(itemSlot.item.type == ItemType.Building)
-        {
-            Build();
-        }
-
-    }
+    } */
 
     #region Building
     private void Build()
@@ -571,27 +752,27 @@ public class Inventory : Singleton<Inventory>
 
     private void StartBuilding()
     {
-        playerBuild.SetNewBuilding(slots[selectedItemIndex].item);
+        playerBuild.SetNewBuilding(slots[selectedItemIndex].Item);
     }
     #endregion
 
     #region Consumables
     private void OnConsume(ItemSlot itemSlot)
     {   
-        for (int i = 0; i < itemSlot.item.consumables.Length; i++)
+        for (int i = 0; i < itemSlot.Item.consumables.Length; i++)
         {
-            switch (itemSlot.item.consumables[i].type)
+            switch (itemSlot.Item.consumables[i].type)
             {
                 case ConsumableType.Health: 
-                    playerNeeds.Heal(itemSlot.item.consumables[i].value);
+                    playerNeeds.Heal(itemSlot.Item.consumables[i].value);
                     break;
                 
                 case ConsumableType.Hunger: 
-                    playerNeeds.Eat(itemSlot.item.consumables[i].value);
+                    playerNeeds.Eat(itemSlot.Item.consumables[i].value);
                     break;
                 
                 case ConsumableType.Thirst: 
-                    playerNeeds.Drink(itemSlot.item.consumables[i].value);
+                    playerNeeds.Drink(itemSlot.Item.consumables[i].value);
                     break;
 
                 default:
@@ -599,7 +780,7 @@ public class Inventory : Singleton<Inventory>
             }
         }
 
-        ReduceInventoryQuantity();
+        OnActionReduceSelectedItemQuantity();
     }
     #endregion
 
@@ -607,7 +788,7 @@ public class Inventory : Singleton<Inventory>
 
     private void Equip()
     {
-        equipManager.EquipNewItem(slots[selectedItemIndex].item);
+        equipManager.EquipNewItem(slots[selectedItemIndex].Item);
     }
 
     private void UnEquip()
@@ -618,60 +799,12 @@ public class Inventory : Singleton<Inventory>
     #endregion
 
     #region Inventory helpers functions
-    public void ReduceInventoryQuantity()
-    {
-        // Reduce in quick slot
-        quickSlots[quickSlotSelectedIndex].quantity--;
-
-        // Reduce in slot
-        slots[selectedItemIndex].quantity--;
-
-        
-        // If quantity is 0 remove item
-        if(slots[selectedItemIndex].quantity == 0)
-        {   
-            int quickSlotPos = quickSlotSelectedIndex;
-
-            // Clear in slots
-            slots[selectedItemIndex].item = null;
-            slots[selectedItemIndex].quantity = 0;
-
-            // Clear selected item
-            ClearSelectedItem();
-
-            // If is in quick slot
-            quickSlots[quickSlotPos].item = null;
-            quickSlots[quickSlotPos].quantity = 0;
-            quickSlots[quickSlotPos].itemSlotPosition = 0;
-        }
-
-        // Update UI Slots
-        UIManager.Instance.UpdateInventorySlots(slots);
-
-        // Update Quick Slots
-        UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
-    }
-
-    private ItemSlot GetItemStack(ItemData item)
-    {
-        // Search for a slot of the same type
-        for (int i = 0; i < slots.Length; i++)
-        {
-            if(slots[i].item == item && slots[i].quantity < item.maxStackAmount)
-            {
-                return slots[i];
-            }
-        }
-
-        return null;
-    }
-
     private int GetItemStackPosition(ItemData item)
     {
         // Search for a slot of the same type
         for (int i = 0; i < slots.Length; i++)
         {
-            if(slots[i].item == item && slots[i].quantity < item.maxStackAmount)
+            if(slots[i].Item == item && slots[i].Quantity < item.maxStackAmount)
             {
                 return i;
             }
@@ -685,13 +818,18 @@ public class Inventory : Singleton<Inventory>
         // Search for a empty slot
         for (int i = 0; i < slots.Length; i++)
         {
-            if(slots[i].item == null)
+            if(slots[i].Item == null)
             {
                 return i;
             }
         }
 
         return -1;
+    }
+
+    public ItemSlot GetItemInSlot(int index)
+    {
+        return slots[index];
     }
 
     public bool HasItems(ItemData item, int quantity)
@@ -703,8 +841,8 @@ public class Inventory : Singleton<Inventory>
 
         for (int i = 0; i < slots.Length; i++)
         {  
-            if(slots[i].item == item)
-                amount += slots[i].quantity;
+            if(slots[i].Item == item)
+                amount += slots[i].Quantity;
 
             if(amount >= quantity)
                 return true;
@@ -715,24 +853,35 @@ public class Inventory : Singleton<Inventory>
 
     public void RemoveResourcesCosts(ItemData item, int quantity)
     {
+        int quantityToRemove = quantity;
+
         for (int i = 0; i < slots.Length; i++)
         {  
-            if(slots[i].item == item)
+            if(slots[i].Item == item)
             { 
+                // Calculate quantity to remove
+                int amount = quantityToRemove;
+                // Check if the quantity that we have in the slot is less then the quantity to remove
+                if(slots[i].Quantity < quantityToRemove)
+                {
+                    amount = slots[i].Quantity;
+                    quantityToRemove -= amount;
+                }
+
                 // Reduce quantity
-                slots[i].quantity -= quantity;
+                slots[i].RemoveQuantity(amount);
 
                 // Reduce quantity in quick slots if need it
                 int quickSlotItemPos = IsItemInQuickSlots(i);
                 if(quickSlotItemPos != -1)
                 {
-                    quickSlots[quickSlotItemPos].quantity -= quantity;
+                    quickSlots[quickSlotItemPos].RemoveQuantity(quantity);
                 }
                 
-                if(slots[i].quantity == 0)
+                if(slots[i].Quantity == 0)
                 {
                     // If is selected in quick slots
-                    if(quickSlotSelectedIndex != -1 && quickSlots[quickSlotSelectedIndex].itemSlotPosition == i)
+                    if(quickSlotSelectedIndex != -1 && quickSlots[quickSlotSelectedIndex].ItemSlotPosition == i)
                     {
                         ClearSelectedItem();
                     }
@@ -740,13 +889,11 @@ public class Inventory : Singleton<Inventory>
                     // If is in quick slot
                     if(quickSlotItemPos != -1)
                     {
-                        quickSlots[quickSlotItemPos].item = null;
-                        quickSlots[quickSlotItemPos].quantity = 0;
-                        quickSlots[quickSlotItemPos].itemSlotPosition = 0;
+                        quickSlots[quickSlotItemPos].ClearSlot();
                     }
 
                     // Remove from slots
-                    slots[i].item = null;
+                    slots[i].ClearSlot();
                 }
 
 
@@ -759,17 +906,53 @@ public class Inventory : Singleton<Inventory>
             }
         }
     }
+
+    public void OnActionReduceSelectedItemQuantity()
+    {
+        // Reduce in quick slot
+        quickSlots[quickSlotSelectedIndex].RemoveQuantity(1);
+
+        // Reduce in slot
+        slots[selectedItemIndex].RemoveQuantity(1);
+
+        // If quantity is 0 remove item
+        if(slots[selectedItemIndex].Quantity == 0)
+        {   
+            int quickSlotPos = quickSlotSelectedIndex;
+
+            // Clear in slots
+            slots[selectedItemIndex].ClearSlot();
+
+            // Clear selected item
+            ClearSelectedItem();
+
+            // If is in quick slot
+            quickSlots[quickSlotPos].ClearSlot();
+        }
+
+        // Update UI Slots
+        UIManager.Instance.UpdateInventorySlots(slots);
+
+        // Update Quick Slots
+        UIManager.Instance.UpdateInventoryQuickSlots(quickSlots);
+    } 
+
     #endregion
 
     #region Quick Slots
-    public void AddToQuickSlot(int targetQuickSlotIndex, int inventoryItemIndex)
+    public void AddToQuickSlot(object data) 
     {
+        SwapItemsModel eventData = data as SwapItemsModel;
+
+        int targetQuickSlotIndex = eventData.targetPosition;
+        int inventoryItemIndex = eventData.draggablePosition;
+
         // Is index valid
         if(quickSlots[targetQuickSlotIndex] == null || slots[inventoryItemIndex] == null)
             return;
         
         // If is resource don't allow drop
-        if(slots[inventoryItemIndex].item.type == ItemType.Resource)
+        if(slots[inventoryItemIndex].Item.type == ItemType.Resource)
             return;
 
         // Is Item already in quick slots
@@ -785,9 +968,8 @@ public class Inventory : Singleton<Inventory>
             // If item in target slot is equipable
             SelectItem(inventoryItemIndex, targetQuickSlotIndex);
 
-            
             // New item is equipable
-            if(slots[inventoryItemIndex].item.type == ItemType.Equipable)
+            if(slots[inventoryItemIndex].Item.type == ItemType.Equipable)
                 Equip();
         }
 
@@ -795,13 +977,13 @@ public class Inventory : Singleton<Inventory>
         if(itemQuickSlotPos != -1 && quickSlotSelectedIndex == itemQuickSlotPos)
         {
             // Has item on target quick slot
-            if(quickSlots[targetQuickSlotIndex].item != null)
+            if(quickSlots[targetQuickSlotIndex].Item != null)
             {
                 // If item in quick slot is selected
-                SelectItem(quickSlots[targetQuickSlotIndex].itemSlotPosition, itemQuickSlotPos);
+                SelectItem(quickSlots[targetQuickSlotIndex].ItemSlotPosition, itemQuickSlotPos);
 
                 // New item is equipable
-                if(quickSlots[targetQuickSlotIndex].item.type == ItemType.Equipable)
+                if(quickSlots[targetQuickSlotIndex].Item.type == ItemType.Equipable)
                     Equip();
             }
             else
@@ -824,9 +1006,7 @@ public class Inventory : Singleton<Inventory>
         {
             // Is not in quick slot
             // Assign to slot
-            quickSlots[targetQuickSlotIndex].item = slots[inventoryItemIndex].item;
-            quickSlots[targetQuickSlotIndex].quantity = slots[inventoryItemIndex].quantity;
-            quickSlots[targetQuickSlotIndex].itemSlotPosition = inventoryItemIndex;
+            quickSlots[targetQuickSlotIndex].UpdateQuickSlot(slots[inventoryItemIndex].Item, slots[inventoryItemIndex].Quantity, inventoryItemIndex);
         }
         
         // Update Quick UI Slots
@@ -836,7 +1016,7 @@ public class Inventory : Singleton<Inventory>
     private void OnQuickSlotClick(int pos)
     {
         // Has item in slot? Or clicked the same position?
-        if(quickSlots[pos] == null || quickSlots[pos].item == null || pos == quickSlotSelectedIndex)
+        if(quickSlots[pos] == null || quickSlots[pos].Item == null || pos == quickSlotSelectedIndex)
         {
             ClearSelectedItem();
             return;
@@ -846,9 +1026,9 @@ public class Inventory : Singleton<Inventory>
         QuickItemSlot itemSlot = quickSlots[pos];
 
         // Set selected item
-        SelectItem(itemSlot.itemSlotPosition, pos);
+        SelectItem(itemSlot.ItemSlotPosition, pos);
 
-        switch (itemSlot.item.type)
+        switch (itemSlot.Item.type)
         {
             case ItemType.Equipable: 
                 // Equip item
@@ -876,14 +1056,14 @@ public class Inventory : Singleton<Inventory>
         if(quickSlotSelectedIndex != -1)
         {
             // If Old selected is equipable
-            if(quickSlots[quickSlotSelectedIndex].item.type == ItemType.Equipable)
+            if(quickSlots[quickSlotSelectedIndex].Item.type == ItemType.Equipable)
             {
                 // UnEquip
                 UnEquip();
             }
 
             // If Old selected is building
-            if(quickSlots[quickSlotSelectedIndex].item.type == ItemType.Building)
+            if(quickSlots[quickSlotSelectedIndex].Item.type == ItemType.Building)
             {
                 // UnBuild
                 UnEquipBuild();
@@ -908,14 +1088,14 @@ public class Inventory : Singleton<Inventory>
         if(quickSlotSelectedIndex != -1)
         {
             // If Old selected is equipable
-            if(quickSlots[quickSlotSelectedIndex].item.type == ItemType.Equipable)
+            if(quickSlots[quickSlotSelectedIndex].Item.type == ItemType.Equipable)
             {
                 // UnEquip
                 UnEquip();
             }
 
             // If Old selected is building
-            if(quickSlots[quickSlotSelectedIndex].item.type == ItemType.Building)
+            if(quickSlots[quickSlotSelectedIndex].Item.type == ItemType.Building)
             {
                 // UnBuild
                 UnEquipBuild();
@@ -939,30 +1119,134 @@ public class Inventory : Singleton<Inventory>
     {
         for (int i = 0; i < quickSlots.Length; i++)
         {
-            if(quickSlots[i].item != null && quickSlots[i].itemSlotPosition == position)
+            if(quickSlots[i].Item != null && quickSlots[i].ItemSlotPosition == position)
             {
                 return i;
             }
         }
 
         return -1;
-    }
+    } 
     #endregion
 }
 
-[System.Serializable]
 public class ItemSlot
 {
-    public ItemData item;
-    public int quantity;
-    public event Action<ItemSlot> OnItemSlotDraggedToInventory;
+    private ItemData itemData;
+    private int quantity;
+
+    public ItemData Item => itemData;
+    public int Quantity => quantity;
+
+    public ItemSlot(ItemData data, int amount)
+    {
+        itemData = data;
+        quantity = amount;
+    }
+
+    public ItemSlot()
+    {
+        ClearSlot();
+    }
+
+    public virtual void ClearSlot()
+    {
+        itemData = null;
+        quantity = -1;
+    }
+
+    public void UpdateSlot(ItemData data, int amount)
+    {
+        itemData = data;
+        quantity = amount;
+    }
+
+    public void AddQuantity(int amount)
+    {
+        quantity += amount;
+
+        if(quantity > itemData.maxStackAmount)
+            quantity = itemData.maxStackAmount;
+    }
+
+    public void RemoveQuantity(int amount)
+    {
+        quantity -= amount;
+
+        if(quantity < 0)
+            quantity = 0;
+    }
+
+    public bool RoomLeftInStack(int amountToAdd, out int amountRemaining)
+    {
+        amountRemaining = itemData.maxStackAmount - quantity;
+        
+        return RoomLeftInStack(amountToAdd);
+    }
+
+    public bool RoomLeftInStack(int amountToAdd)
+    {
+        if(quantity + amountToAdd <= itemData.maxStackAmount) return true;
+        else return false;
+    }
+
+    /* public event Action<ItemSlot> OnItemSlotDraggedToInventory;
     public void ItemSlotDraggedToInventory(){OnItemSlotDraggedToInventory?.Invoke(this);}
+
+    public delegate void DelegateSwap(ItemSlot swapItem, ItemSlot toSwapItem);
+    public event DelegateSwap OnItemSwapBag;
+    public void ItemSlotSwappedInBag(ItemSlot swapItem)
+    {
+        if(OnItemSwapBag == null)
+            return;            
+
+        OnItemSwapBag(swapItem, this);
+    }
+
+    public delegate void DelegateDrop(ItemSlot swapItem, ItemSlot toSwapItem);
+    public event DelegateDrop OnItemDropBag;
+    public void ItemSlotDropInBag(ItemSlot swapItem)
+    {
+        if(OnItemSwapBag == null)
+            return;            
+
+        OnItemDropBag(swapItem, this);
+    } */
 }
 
-[System.Serializable]
-public class QuickItemSlot
+public class QuickItemSlot : ItemSlot
 {
-    public ItemData item;
-    public int itemSlotPosition;
-    public int quantity;
+    private int itemSlotPosition;
+    public int ItemSlotPosition => itemSlotPosition;
+
+    public override void ClearSlot()
+    {
+        base.ClearSlot();
+
+        itemSlotPosition = -1;
+    }
+
+    public void UpdateQuickSlot(ItemData data, int amount, int slotPosition)
+    {
+        UpdateSlot(data, amount);
+
+        itemSlotPosition = slotPosition;
+    }
+
+    public void SetItemSlotPosition(int slotPosition)
+    {
+        itemSlotPosition = slotPosition;
+    }
+}
+
+public class SwapItemsModel
+{
+    public int targetPosition;
+    public int draggablePosition;
+
+    public SwapItemsModel(int tPos, int dPos)
+    {
+        targetPosition = tPos;
+        draggablePosition = dPos;
+    }
 }
