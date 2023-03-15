@@ -49,14 +49,16 @@ public class BuildingPreview : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // 10 is the terrain layer
-        if(other.gameObject.layer != 10)
+        // 11 is the interact trigger layer
+        if(other.gameObject.layer != 10 && other.gameObject.layer != 11)
             collidingObjects.Add(other.gameObject);
     }
 
     private void OnTriggerExit(Collider other)
     {
         // 10 is the terrain layer
-        if(other.gameObject.layer != 10)
+        // 11 is the interact trigger layer
+        if(other.gameObject.layer != 10 && other.gameObject.layer != 11)
             collidingObjects.Remove(other.gameObject);
     }
 }

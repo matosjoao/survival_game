@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class InteractionManager : MonoBehaviour
@@ -8,29 +9,34 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private LayerMask layerMask;
 
     [Header("Components")]
+    [SerializeField] private InteractTrigger interactTrigger;
     private InputReader inputReader;
     private PlayerController playerController;
+    private Inventory inventory;
     private Transform cameraTransform;
+
 
     private float lastCheckTime;
     private GameObject curInteractGameObject;
     private IInteractable curInteractable;
    
-
     private void OnEnable() 
     {
         inputReader.InteractEvent += OnInteract;
+        interactTrigger.OnPlayerLeave += HandleOnPlayerLeave;
     }
 
     private void OnDisable() 
     {
         inputReader.InteractEvent -= OnInteract;
+        interactTrigger.OnPlayerLeave -= HandleOnPlayerLeave;
     }
 
     private void Awake() 
     {
         inputReader = GetComponent<InputReader>();
         playerController = GetComponent<PlayerController>();
+        inventory = GetComponent<Inventory>();
     }
 
     private void Start() 
@@ -85,19 +91,23 @@ public class InteractionManager : MonoBehaviour
         if(playerController.IsInteracting)
             return;
 
+        // Set current interactable on inventory
+        inventory.SetCurrentInteractable(curInteractGameObject);
+
         // Interact
         curInteractable.OnInteract(playerController);
 
         // Reset interaction
-        curInteractGameObject = null;
-        curInteractable = null;
+        //curInteractGameObject = null;
+        //curInteractable = null;
         UIManager.Instance.SetPromptText(false);
     }
-}
 
-// TODO:: Put in a seperated file
-public interface IInteractable 
-{
-    string GetInteractPrompt();
-    void OnInteract(PlayerController playerController);
+    private void HandleOnPlayerLeave(IInteractable obj)
+    {
+        if(obj == curInteractable)
+        {
+            curInteractable.OnDesinteract(playerController);
+        }
+    }
 }

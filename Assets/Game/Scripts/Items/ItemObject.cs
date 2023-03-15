@@ -11,6 +11,8 @@ public class ItemObject : MonoBehaviour, IInteractable
         return string.Format("Pickup {0}", itemData.displayName);
     }
 
+    public void OnDesinteract(PlayerController playerController) {}
+
     public void OnInteract(PlayerController playerController)
     {
         // Get Inventory

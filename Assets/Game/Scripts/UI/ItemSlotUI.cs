@@ -13,10 +13,14 @@ public class ItemSlotUI : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDr
     [HideInInspector] public int Index { get; private set;}
     [HideInInspector] public ItemSlot CurrentItemSlot { get; private set;}
     [HideInInspector] public event Action<ItemSlotUI> OnItemDroppedOn, OnItemBeginDrag, OnItemEndDrag;
+    
     public void Set(ItemSlot slot)
     {
         // Set current slot
         CurrentItemSlot = slot;
+
+        if(slot.Item == null)
+            return;
 
         // Set icon
         icon.gameObject.SetActive(true);
@@ -38,26 +42,6 @@ public class ItemSlotUI : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDr
     public void SetIndex(int value)
     {
         Index = value;
-    }
-
-    public void AddToStorageFromInventory(int invIndex)
-    {
-        EventBus.Instance.Publish("AddToStorageFromInventory", new SwapItemsModel(Index, invIndex));
-    }
-
-    public void SwapStorage(int stoIndex)
-    {
-        EventBus.Instance.Publish("SwapStorage", new SwapItemsModel(Index, stoIndex));
-
-        //CurrentItemSlot.ItemSlotSwappedInBag(swapItem);
-    }
-
-    public void DropToBag(ItemSlot swapItem)
-    {
-        if(CurrentItemSlot == null)
-            return;
-
-        //CurrentItemSlot.ItemSlotDropInBag(swapItem);
     }
 
     #region Events

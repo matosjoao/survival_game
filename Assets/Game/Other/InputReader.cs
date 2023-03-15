@@ -14,7 +14,8 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
     public event Action JumpEvent;
     public event Action InteractEvent;
     public event Action InventoryEvent;
-    public event Action MouseClickEvent;
+    public event Action MouseLeftEvent;
+    public event Action MouseRightEvent;
     public event Action<int> QuickSlotClick;
 
     private PlayerControls controls;
@@ -45,12 +46,20 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
         MouseDelta = context.ReadValue<Vector2>();
     }
 
-    public void OnAttack(InputAction.CallbackContext context)
+    public void OnMouseRight(InputAction.CallbackContext context)
+    {
+         // If not press return
+        if(!context.performed){return;}
+        // Invoke Jump event
+        MouseRightEvent?.Invoke();
+    }
+
+    public void OnMouseLeft(InputAction.CallbackContext context)
     {
         if(context.performed)
         {
             IsAttaking = true;
-            MouseClickEvent?.Invoke();
+            MouseLeftEvent?.Invoke();
         }
         else if(context.canceled)
         {

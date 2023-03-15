@@ -31,3 +31,15 @@ public class EventBus : Singleton<EventBus>
         }
     }
 }
+
+public class EventItemsModel
+{
+    public int targetPosition;
+    public int draggablePosition;
+
+    public EventItemsModel(int tPos, int dPos)
+    {
+        targetPosition = tPos;
+        draggablePosition = dPos;
+    }
+}

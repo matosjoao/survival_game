@@ -16,8 +16,8 @@ TagManager:
   - Resource
   - Equip
   - Terrain
-  - 
-  - 
+  - InteractTrigger
+  - Building
   - 
   - 
   - 

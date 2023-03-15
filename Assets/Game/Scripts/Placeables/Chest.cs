@@ -1,37 +1,93 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
-public class Chest : MonoBehaviour, IInteractable
+public class Chest : BaseInventory, IInteractable
 {
     [Header("Properties")]
-    [SerializeField] private int maxSlotsSize;
-
-    [Header("Items")]
-    public ItemSlot[] slots;
-
-    private PlayerController pController;
+    [SerializeField] private string uiTitle;
+    
+    private void Awake() 
+    {
+        InitializeSlots();    
+    }
 
     private void OnEnable() 
     {
-        EventBus.Instance.Subscribe("AddToStorageFromInventory", AddItem);
-        EventBus.Instance.Subscribe("SwapStorage", SwapItem);
+        for (int i = 0; i < Slots.Length; i++)
+        {
+            Slots[i].OnItemSwap += HandleSwap;
+            Slots[i].OnItemAdd += HandleAddItem;
+            Slots[i].OnItemDrop += HandleDropItem;
+        }
     }
 
     private void OnDisable() 
     {
-        EventBus.Instance.Unsubscribe("AddToStorageFromInventory", AddItem);
-        EventBus.Instance.Unsubscribe("SwapStorage", SwapItem);
+        for (int i = 0; i < Slots.Length; i++)
+        {
+            Slots[i].OnItemSwap -= HandleSwap;
+            Slots[i].OnItemAdd -= HandleAddItem;
+            Slots[i].OnItemDrop -= HandleDropItem;
+        }
     }
 
-    private void Start() 
+    private void HandleOnPlayerLeaves(PlayerController playerController)
     {
-        // Initialize slots
-        slots = new ItemSlot[maxSlotsSize];
-        for (int i = 0; i < slots.Length; i++)
+        if(playerController == pController)
         {
-            slots[i] = new ItemSlot();
+            // Same player that was interaction
+
+            // Close storage window
+            StorageUI.Instance.Toogle(false);
         }
+    }
+
+    public void HandleAddItem(Guid id, int dPos)
+    {
+        // Base add item
+        AddItem(id, dPos);
+
+        // Update UI
+        StorageUI.Instance.UpdateUISlots(Slots);
+    }
+
+    public void HandleSwap(Guid id, int dPos)
+    {
+        // Base Swap item
+        SwapItem(id, dPos);
+
+        // Update UI
+        StorageUI.Instance.UpdateUISlots(Slots);
+    }
+
+    private void HandleDropItem(Guid id)
+    {
+        // Base Swap item
+        DropItem(id);
+        
+        // Update UI
+        StorageUI.Instance.UpdateUISlots(Slots);
+    }
+
+    public override void RemoveItem(int index)
+    {
+        base.RemoveItem(index);
+
+        StorageUI.Instance.UpdateUISlots(Slots);
+    }
+
+    public override void UpdateSlot(ItemSlot itemSlot, int index)
+    {
+        base.UpdateSlot(itemSlot, index);
+
+        StorageUI.Instance.UpdateUISlots(Slots);
+    }
+    
+    public override void UpdateSlotQuantity(int index, int amount)
+    {
+        base.UpdateSlotQuantity(index, amount);
+
+        StorageUI.Instance.UpdateUISlots(Slots);
     }
 
     private void OpenChest()
@@ -52,86 +108,31 @@ public class Chest : MonoBehaviour, IInteractable
             UIManager.Instance.ToggleInventoryWindow(true);
         }
 
-        // Open bag window
+        // Open storage window
         StorageUI.Instance.Toogle(true);
 
-        StorageUI.Instance.UpdateUISlots(slots);
+        StorageUI.Instance.UpdateTitle(uiTitle);
+
+        StorageUI.Instance.UpdateUISlots(Slots);
     }
 
-    private void AddItem(object data)
+    private void CloseChest()
     {
         // Has someone interacting with chest?
         if(pController == null)
             return;
-        
-        // Get player inventory
-        Inventory pInventory = pController.GetComponent<Inventory>();
-        if(pInventory == null)
-            return;
 
-        // Get data
-        SwapItemsModel eventData = data as SwapItemsModel;
-        int chestPos = eventData.targetPosition;
-        int invPos = eventData.draggablePosition;
+        // Toggle cursor
+        pController.ToggleCursor(false);
 
-        // Validate inventory item data
-        ItemSlot itemSlot = pInventory.GetItemInSlot(invPos);
-        if(itemSlot == null)
-            return;
+        // Toggle interaction
+        pController.ToggleInteract();
 
-        // Has item in slot
-        if(slots[chestPos].Item != null)
-        {
-            // Is the same type and can stack and as room left?
-            if(slots[chestPos].Item == itemSlot.Item && slots[chestPos].Item.canStack && slots[chestPos].RoomLeftInStack(itemSlot.Quantity, out int roomLeftQuantity ))
-            {
-                // Calculate quantity to add
-                int quantityToAdd = Mathf.Min(roomLeftQuantity, itemSlot.Quantity);
+        // If inventory is not open, open
+        UIManager.Instance.ToggleInventoryWindow();
 
-                // Exchange quantities
-                slots[chestPos].AddQuantity(quantityToAdd);
-
-                // Update quantity in inventory
-                pInventory.UpdateSlotQuantity(invPos, quantityToAdd);
-            }
-            else
-            {
-                ItemSlot item1 = new ItemSlot(slots[chestPos].Item, slots[chestPos].Quantity);
-
-                // Assign item to storage slot
-                slots[chestPos].UpdateSlot(itemSlot.Item, itemSlot.Quantity);
-
-                // Swap between inventory and storage
-                pInventory.UpdateSlot(item1, invPos);
-            }
-        }
-        else
-        {
-            // Assign item to storage slot
-            slots[chestPos].UpdateSlot(itemSlot.Item, itemSlot.Quantity);
-
-            // Remove item from inventory
-            pInventory.RemoveItem(invPos); 
-        }
-
-        // Update UI
-        StorageUI.Instance.UpdateUISlots(slots);
-    }
-
-    private void SwapItem(object data)
-    {
-        SwapItemsModel eventData = data as SwapItemsModel;
-
-        int tPos = eventData.targetPosition;
-        int dPos = eventData.draggablePosition;
-
-        // Swap slots
-        ItemSlot item1 = slots[dPos];
-        slots[dPos] = slots[tPos];
-        slots[tPos] = item1;
-
-        // Update UI
-        StorageUI.Instance.UpdateUISlots(slots);
+        // Open storage window
+        StorageUI.Instance.Toogle();
     }
 
     #region Interactable events
@@ -145,6 +146,13 @@ public class Chest : MonoBehaviour, IInteractable
         pController = playerController;
 
         OpenChest();
+    }
+
+    public void OnDesinteract(PlayerController playerController)
+    {
+        pController = playerController;
+
+        CloseChest();
     }
     #endregion
 }

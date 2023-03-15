@@ -22,8 +22,6 @@ public class Resource : MonoBehaviour
             Inventory.Instance.AddItem(item);
         }
 
-        Debug.Log(hitNormal);
-
         // TODO:: Improve maybe change to pool
         Destroy(Instantiate(hitParticle, hitPoint, Quaternion.LookRotation(hitNormal, Vector3.up)), 1.0f);
 

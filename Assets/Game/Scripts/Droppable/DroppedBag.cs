@@ -1,119 +1,102 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DroppedBag : MonoBehaviour, IInteractable
+public class DroppedBag : BaseInventory, IInteractable
 {
-    [Header("Properties")]
-    [SerializeField] private int maxSlotsSize;
+    // TODO:: Create an event that destroyes the dropped bag after a minutes when someone leaves or when is empty
 
-    [Header("Items")]
-    public List<ItemSlot> slots = new List<ItemSlot>();
-
-    private void Start() 
+    private void Awake() 
     {
-        // Has items in slots already
-        if(slots.Count > 0)
+        InitializeSlots();    
+    }
+
+    private void OnEnable() 
+    {
+        for (int i = 0; i < Slots.Length; i++)
         {
-            foreach (ItemSlot slot in slots)
-            {
-                // Subscribe to events
-                //slot.OnItemSlotDraggedToInventory += HandleItemSlotDraggedToInventoryFromBag;
-                //slot.OnItemSwapBag += HandleOnItemSwapBag;
-            }
+            Slots[i].OnItemSwap += HandleSwap;
+            Slots[i].OnItemAdd += HandleAddItem;
         }
     }
 
-    private void OnDestroy() 
+    private void OnDisable() 
     {
-        // Has items in slots 
-        if(slots.Count > 0)
+        for (int i = 0; i < Slots.Length; i++)
         {
-            foreach (ItemSlot slot in slots)
-            {
-                // Unsubscribe to events
-                //slot.OnItemSlotDraggedToInventory -= HandleItemSlotDraggedToInventoryFromBag;
-                //slot.OnItemSwapBag -= HandleOnItemSwapBag;
-            }
+            Slots[i].OnItemSwap -= HandleSwap;
+            Slots[i].OnItemAdd -= HandleAddItem;
         }
     }
 
-    public void AddItem(ItemData item, int quantity)
+    public void HandleAddItem(Guid Id, int dPos)
     {
-        // Add item bag
+        // Base add item
+        AddItem(Id, dPos);
 
-        // Fiquei aqui!!!
-        // Can stack
-        /* if(itemSlot.item.canStack)
+        // Update UI
+        StorageUI.Instance.UpdateUISlots(Slots , true);
+    }
+
+    public void HandleSwap(Guid Id, int dPos)
+    {
+        // Base Swap item
+        SwapItem(Id, dPos);
+
+        // Update UI
+        StorageUI.Instance.UpdateUISlots(Slots, true);
+    }
+
+    public override void RemoveItem(int index)
+    {
+        base.RemoveItem(index);
+
+        if(IsEmptyBag())
         {
-            ItemSlot slotToStackTo = GetItemStack(itemSlot.item);
-            if(slotToStackTo != null)
-            {
-                // Verify quantities
+            CloseBag();
 
-                // slotToStackTo.quantity++;
-
-                // Update UI Slots
-                // UIManager.Instance.UpdateInventorySlots(slots);
+            // Has someone interacting with it?
+            if(pController == null)
                 return;
-            }
-        } */
 
-        // Reached max slots
-        if(slots.Count == maxSlotsSize)
-            return;
-
-        // Create Slot
-        ItemSlot newSlot = new ItemSlot();
-        //newSlot.item = item;
-        //newSlot.quantity = quantity;
-
-        // Subscribe to events
-        //newSlot.OnItemSlotDraggedToInventory += HandleItemSlotDraggedToInventoryFromBag;
-        //newSlot.OnItemSwapBag += HandleOnItemSwapBag;
-
-        // Add to slots
-        slots.Add(newSlot);
-
-        // If window open, update ui slots
-        if(StorageUI.Instance.IsOpen() && StorageUI.Instance.IsInteractingWithBag)
-        {
-            StorageUI.Instance.UpdateUISlots(slots.ToArray());
-        }
-    }
-
-    public bool CanAddItem()
-    {
-        // Can stack
-
-
-        // Reached max slots
-        if(slots.Count == maxSlotsSize)
-            return false;
-
-        return true;
-    }
-
-    private ItemSlot GetItemStack(ItemData item)
-    {
-        // Search for a slot of the same type
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if(slots[i].Item == item && slots[i].Quantity < item.maxStackAmount)
+            if(pController.TryGetComponent<Inventory>(out Inventory inv))
             {
-                return slots[i];
+                inv.curDroppedBag = null;
+
+                // TODO:: Improve change to pool
+                Destroy(gameObject);
             }
         }
+        else
+        {
+            StorageUI.Instance.UpdateUISlots(Slots , true);
+        }
+    }
 
-        return null;
+    public override void UpdateSlot(ItemSlot itemSlot, int index)
+    {
+        base.UpdateSlot(itemSlot, index);
+
+        StorageUI.Instance.UpdateUISlots(Slots , true);
+    }
+    public override void UpdateSlotQuantity(int index, int amount)
+    {
+        base.UpdateSlotQuantity(index, amount);
+
+        StorageUI.Instance.UpdateUISlots(Slots , true);
     }
 
     private void OpenBag()
     {
+        // Has someone interacting with chest?
+        if(pController == null)
+            return;
+
         // Toggle cursor
-        //UIManager.Instance.ToggleCursor(true);
+        pController.ToggleCursor(true);
 
         // Toggle interaction
-        //UIManager.Instance.ToggleInteract(false);
+        pController.ToggleInteract(true);
 
         // If inventory is not open, open
         if(!UIManager.Instance.IsInventoryOpen())
@@ -122,46 +105,61 @@ public class DroppedBag : MonoBehaviour, IInteractable
         }
 
         // Open bag window
-        StorageUI.Instance.Toogle(true);
+        StorageUI.Instance.Toogle(true, true);
 
-        StorageUI.Instance.UpdateUISlots(slots.ToArray());
-
-        StorageUI.Instance.SetIsInteractingWithBag(true);
+        StorageUI.Instance.UpdateTitle("Dropped Bag");
+        
+        StorageUI.Instance.UpdateUISlots(Slots, true);
     }
 
-    private void HandleItemSlotDraggedToInventoryFromBag(ItemSlot itemSlot)
+    private void CloseBag()
     {
-        Debug.Log("Entour Bag");
-        foreach (ItemSlot slot in slots)
+        // Has someone interacting with chest?
+        if(pController == null)
+            return;
+
+        // Toggle cursor
+        pController.ToggleCursor(false);
+
+        // Toggle interaction
+        pController.ToggleInteract();
+
+        // If inventory is not open, open
+        UIManager.Instance.ToggleInventoryWindow();
+
+        // Open storage window
+        StorageUI.Instance.Toogle();
+    }
+
+    public bool AddDroppedItem(ItemData item, int quantity)
+    {
+        // Get empty slot
+        int emptySlotPos = GetEmptySlotPosition();
+        if(emptySlotPos == -1)
+            return false;
+
+        // Update slot
+        UpdateSlotByIndex(item, quantity, emptySlotPos);
+
+        // Check if bag is open
+        if(StorageUI.Instance.IsInteractingWithDroppedBag)
         {
-            if(slot == itemSlot)
-            {   
-                // Unsubscribe to events
-                //slot.OnItemSlotDraggedToInventory -= HandleItemSlotDraggedToInventoryFromBag;
-                //slot.OnItemSwapBag -= HandleOnItemSwapBag;
+            StorageUI.Instance.UpdateUISlots(Slots, true);
+        }
 
-                // Remove slot
-                slots.Remove(slot);
+        return true;
+    }
 
-                // Update UI
-                StorageUI.Instance.ClearUISlot(slot);
-                return;
+    private bool IsEmptyBag()
+    {
+        foreach (ItemSlot slot in Slots)
+        {
+            if(slot.Item != null)
+            {
+                return false;
             }
         }
-    }
-
-    private void HandleOnItemSwapBag(ItemSlot swapItem, ItemSlot toSwapItem)
-    {
-        // Get positions
-        int swapItemPos = slots.IndexOf(swapItem);
-        int toSwapItemPos = slots.IndexOf(toSwapItem);
-
-        // Swap items
-        slots[swapItemPos] = toSwapItem;
-        slots[toSwapItemPos] = swapItem;
-
-        // Update UI
-        StorageUI.Instance.UpdateUISlots(slots.ToArray());
+        return true;
     }
 
     #region Interactable events
@@ -172,7 +170,16 @@ public class DroppedBag : MonoBehaviour, IInteractable
 
     public void OnInteract(PlayerController playerController)
     {
+        pController = playerController;
+
         OpenBag();
+    }
+
+    public void OnDesinteract(PlayerController playerController)
+    {
+        pController = playerController;
+        
+        CloseBag();
     }
     #endregion
 }

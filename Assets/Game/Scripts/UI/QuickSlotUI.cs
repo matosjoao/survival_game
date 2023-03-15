@@ -32,6 +32,9 @@ public class QuickSlotUI : MonoBehaviour, IDropHandler
     {
         CurrentItemSlot = slot;
 
+        if(slot.Item == null)
+            return;
+            
         icon.gameObject.SetActive(true);
         icon.sprite = slot.Item.icon;
 

@@ -51,9 +51,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Attack",
+                    "name": "MouseLeft",
                     "type": "Button",
                     "id": "dbab275e-d02b-4fdc-b2c0-94f039d554fa",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MouseRight",
+                    "type": "Button",
+                    "id": "c1a707c7-4703-4bb3-9288-4250d4ba4a24",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -225,17 +234,6 @@
                 },
                 {
                     "name": "",
-                    "id": "c8a1963f-49c4-4864-8d73-1ca968e47b67",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "MouseKeyboard",
-                    "action": "Attack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "1539b11e-6d2d-4a7f-9c4a-782ac49dc1f5",
                     "path": "<Mouse>/position",
                     "interactions": "",
@@ -308,6 +306,28 @@
                     "processors": "",
                     "groups": "MouseKeyboard",
                     "action": "RotateBuild",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "aee445bd-524a-4358-8e7f-bc6c9d9d4ad6",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "MouseKeyboard",
+                    "action": "MouseRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c8a1963f-49c4-4864-8d73-1ca968e47b67",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "MouseKeyboard",
+                    "action": "MouseLeft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

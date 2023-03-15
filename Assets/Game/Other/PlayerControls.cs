@@ -73,9 +73,18 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Attack"",
+                    ""name"": ""MouseLeft"",
                     ""type"": ""Button"",
                     ""id"": ""dbab275e-d02b-4fdc-b2c0-94f039d554fa"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MouseRight"",
+                    ""type"": ""Button"",
+                    ""id"": ""c1a707c7-4703-4bb3-9288-4250d4ba4a24"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -247,17 +256,6 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""c8a1963f-49c4-4864-8d73-1ca968e47b67"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""MouseKeyboard"",
-                    ""action"": ""Attack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""1539b11e-6d2d-4a7f-9c4a-782ac49dc1f5"",
                     ""path"": ""<Mouse>/position"",
                     ""interactions"": """",
@@ -332,6 +330,28 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""RotateBuild"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aee445bd-524a-4358-8e7f-bc6c9d9d4ad6"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""MouseRight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c8a1963f-49c4-4864-8d73-1ca968e47b67"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""MouseKeyboard"",
+                    ""action"": ""MouseLeft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -362,7 +382,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Main_Inventory = m_Main.FindAction("Inventory", throwIfNotFound: true);
         m_Main_Interact = m_Main.FindAction("Interact", throwIfNotFound: true);
         m_Main_Look = m_Main.FindAction("Look", throwIfNotFound: true);
-        m_Main_Attack = m_Main.FindAction("Attack", throwIfNotFound: true);
+        m_Main_MouseLeft = m_Main.FindAction("MouseLeft", throwIfNotFound: true);
+        m_Main_MouseRight = m_Main.FindAction("MouseRight", throwIfNotFound: true);
         m_Main_MousePosition = m_Main.FindAction("MousePosition", throwIfNotFound: true);
         m_Main_QuickSlotOne = m_Main.FindAction("QuickSlotOne", throwIfNotFound: true);
         m_Main_QuickSlotTwo = m_Main.FindAction("QuickSlotTwo", throwIfNotFound: true);
@@ -434,7 +455,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Main_Inventory;
     private readonly InputAction m_Main_Interact;
     private readonly InputAction m_Main_Look;
-    private readonly InputAction m_Main_Attack;
+    private readonly InputAction m_Main_MouseLeft;
+    private readonly InputAction m_Main_MouseRight;
     private readonly InputAction m_Main_MousePosition;
     private readonly InputAction m_Main_QuickSlotOne;
     private readonly InputAction m_Main_QuickSlotTwo;
@@ -451,7 +473,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @Inventory => m_Wrapper.m_Main_Inventory;
         public InputAction @Interact => m_Wrapper.m_Main_Interact;
         public InputAction @Look => m_Wrapper.m_Main_Look;
-        public InputAction @Attack => m_Wrapper.m_Main_Attack;
+        public InputAction @MouseLeft => m_Wrapper.m_Main_MouseLeft;
+        public InputAction @MouseRight => m_Wrapper.m_Main_MouseRight;
         public InputAction @MousePosition => m_Wrapper.m_Main_MousePosition;
         public InputAction @QuickSlotOne => m_Wrapper.m_Main_QuickSlotOne;
         public InputAction @QuickSlotTwo => m_Wrapper.m_Main_QuickSlotTwo;
@@ -483,9 +506,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Look.started -= m_Wrapper.m_MainActionsCallbackInterface.OnLook;
                 @Look.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnLook;
                 @Look.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnLook;
-                @Attack.started -= m_Wrapper.m_MainActionsCallbackInterface.OnAttack;
-                @Attack.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnAttack;
-                @Attack.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnAttack;
+                @MouseLeft.started -= m_Wrapper.m_MainActionsCallbackInterface.OnMouseLeft;
+                @MouseLeft.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnMouseLeft;
+                @MouseLeft.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnMouseLeft;
+                @MouseRight.started -= m_Wrapper.m_MainActionsCallbackInterface.OnMouseRight;
+                @MouseRight.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnMouseRight;
+                @MouseRight.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnMouseRight;
                 @MousePosition.started -= m_Wrapper.m_MainActionsCallbackInterface.OnMousePosition;
                 @MousePosition.performed -= m_Wrapper.m_MainActionsCallbackInterface.OnMousePosition;
                 @MousePosition.canceled -= m_Wrapper.m_MainActionsCallbackInterface.OnMousePosition;
@@ -526,9 +552,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Look.started += instance.OnLook;
                 @Look.performed += instance.OnLook;
                 @Look.canceled += instance.OnLook;
-                @Attack.started += instance.OnAttack;
-                @Attack.performed += instance.OnAttack;
-                @Attack.canceled += instance.OnAttack;
+                @MouseLeft.started += instance.OnMouseLeft;
+                @MouseLeft.performed += instance.OnMouseLeft;
+                @MouseLeft.canceled += instance.OnMouseLeft;
+                @MouseRight.started += instance.OnMouseRight;
+                @MouseRight.performed += instance.OnMouseRight;
+                @MouseRight.canceled += instance.OnMouseRight;
                 @MousePosition.started += instance.OnMousePosition;
                 @MousePosition.performed += instance.OnMousePosition;
                 @MousePosition.canceled += instance.OnMousePosition;
@@ -570,7 +599,8 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnInventory(InputAction.CallbackContext context);
         void OnInteract(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
-        void OnAttack(InputAction.CallbackContext context);
+        void OnMouseLeft(InputAction.CallbackContext context);
+        void OnMouseRight(InputAction.CallbackContext context);
         void OnMousePosition(InputAction.CallbackContext context);
         void OnQuickSlotOne(InputAction.CallbackContext context);
         void OnQuickSlotTwo(InputAction.CallbackContext context);

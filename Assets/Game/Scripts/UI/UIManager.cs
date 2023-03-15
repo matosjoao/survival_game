@@ -11,11 +11,11 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private Image healthBar;
     [SerializeField] private Image hungerBar;
     [SerializeField] private Image thirstBar;
-
     public UnityEvent onTakeDamage;
 
     [Header("Player Interaction")]
     [SerializeField] private TextMeshProUGUI promptText;
+    [SerializeField] private Slider actionSlider;
 
     [Header("Player Inventory")]
     [SerializeField] private GameObject inventoryWindow;
@@ -26,18 +26,56 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private MouseFollower inventorySlotUIDraggable;
     [SerializeField] private Dropzone droppablezone;
 
-    public UnityEvent onOpenInventory;
-    public UnityEvent onCloseInventory;
-    private List<ItemSlotUI> uiSlots = new List<ItemSlotUI>();
-    private List<QuickSlotUI> quickUISlots = new List<QuickSlotUI>();
-    private int currentDraggedItemIndex = -1;
-
     [Header("Player Base Craft")]
     [SerializeField] private TextMeshProUGUI craftItemName;
     [SerializeField] private Image craftItemIcon;
     [SerializeField] private GameObject craftButton;
     [SerializeField] private TextMeshProUGUI craftResourcesCosts;
     [SerializeField] private CraftingRecipeUI[] craftRecipeUIs;
+    [SerializeField] private GameObject baseCraftWindow;
+
+    public UnityEvent onOpenInventory;
+    public UnityEvent onCloseInventory;
+    private List<ItemSlotUI> uiSlots = new List<ItemSlotUI>();
+    private List<QuickSlotUI> quickUISlots = new List<QuickSlotUI>();
+
+    private void OnEnable() 
+    {
+        // Subscribe to events
+        droppablezone.OnItemDroppedOnDropZone += HandleItemDroppedOnDropZone;
+
+        foreach (ItemSlotUI uiSlot in uiSlots)
+        {
+            
+            uiSlot.OnItemBeginDrag += HandleItemBeginDrag;
+            uiSlot.OnItemEndDrag += HandleItemEndDrag;
+            uiSlot.OnItemDroppedOn += HandleItemDrop;
+        }
+
+        foreach (QuickSlotUI quickUISlot in quickUISlots)
+        {
+            quickUISlot.OnItemDroppedOnQuickSlot += HandleItemDropQuickSlot;
+        }
+    }
+
+    private void OnDisable() 
+    {
+        // Unsubscribe to events
+        droppablezone.OnItemDroppedOnDropZone -= HandleItemDroppedOnDropZone;
+
+        foreach (ItemSlotUI uiSlot in uiSlots)
+        {
+            
+            uiSlot.OnItemBeginDrag -= HandleItemBeginDrag;
+            uiSlot.OnItemEndDrag -= HandleItemEndDrag;
+            uiSlot.OnItemDroppedOn -= HandleItemDrop;
+        }
+
+        foreach (QuickSlotUI quickUISlot in quickUISlots)
+        {
+            quickUISlot.OnItemDroppedOnQuickSlot -= HandleItemDropQuickSlot;
+        }
+    }
 
     #region Player Needs
     public void UpdateNeedsUI(float health, float hunger, float thirst)
@@ -66,12 +104,30 @@ public class UIManager : Singleton<UIManager>
             promptText.gameObject.SetActive(false);
         }
     }
+
+    public void ShowSlider()
+    {
+        actionSlider.gameObject.SetActive(true);
+    }
+
+    public void HideSlider()
+    {
+        actionSlider.value = 0.0f;
+        actionSlider.gameObject.SetActive(false);
+    }
+
+    public void UpdateActionSlider(float value)
+    {
+        actionSlider.value = value;
+    }
     #endregion
 
     #region Player Inventory
-    public void ToggleInventoryWindow(bool visible = false)
+    public void ToggleInventoryWindow(bool visible = false, bool isInv = false)
     {
         inventoryWindow.SetActive(visible);
+
+        baseCraftWindow.SetActive(isInv);
     }
 
     public bool IsInventoryOpen()
@@ -88,48 +144,22 @@ public class UIManager : Singleton<UIManager>
             
             uiSlot.Clear();
             uiSlot.SetIndex(i);
+
             uiSlots.Add(uiSlot);
-
-            // Subscribe to events
-            uiSlot.OnItemBeginDrag += HandleItemBeginDrag;
-            uiSlot.OnItemEndDrag += HandleItemEndDrag;
-            uiSlot.OnItemDroppedOn += HandleItemDrop;
         }
-    }
-
-    public void UnsubscribeSlotsEvents() 
-    {
-        foreach (ItemSlotUI uiSlot in uiSlots)
-        {
-            // Unsubscribe to events
-            uiSlot.OnItemBeginDrag -= HandleItemBeginDrag;
-            uiSlot.OnItemEndDrag -= HandleItemEndDrag;
-            uiSlot.OnItemDroppedOn -= HandleItemDrop;
-        }
-
-        foreach (QuickSlotUI quickUISlot in quickUISlots)
-        {
-            // Unsubscribe to events
-            quickUISlot.OnItemDroppedOnQuickSlot -= HandleItemDropQuickSlot;
-        }
-
-        droppablezone.OnItemDroppedOnDropZone -= HandleItemDroppedOnDropZone;
     }
 
     private void HandleItemDrop(ItemSlotUI itemSlotUI)
     {
-        // TODO:: Try to solve this without singleton
         if(inventorySlotUIDraggable.IsInventory)
         {
             // From inventory to inventory
-            EventBus.Instance.Publish("SwapItems", new SwapItemsModel(itemSlotUI.Index, currentDraggedItemIndex));
+            itemSlotUI.CurrentItemSlot.SwapItems(inventorySlotUIDraggable.UISlot.Index);
         }
         else
         {
             // From storage to inventory
-            // FIQUEI AQUI!!!
-            // O melhor será ter no playerInventory uma referencia para o objecto que estamos a interagir
-            // EventBus.Instance.Publish("AddItem", new SwapItemsModel(itemSlotUI.Index, inventorySlotUIDraggable.UISlot.Index)); 
+            itemSlotUI.CurrentItemSlot.AddItem(inventorySlotUIDraggable.UISlot.Index);
         }
 
         // Hide draggable slot
@@ -142,9 +172,6 @@ public class UIManager : Singleton<UIManager>
         if(itemSlotUI.CurrentItemSlot == null)
             return;
         
-        // Assign current slot index
-        currentDraggedItemIndex = itemSlotUI.Index;
-
         // Show draggable slot in mouse position
         inventorySlotUIDraggable.Toggle(true);
         inventorySlotUIDraggable.SetData(itemSlotUI.CurrentItemSlot, itemSlotUI.Index);
@@ -153,42 +180,36 @@ public class UIManager : Singleton<UIManager>
     private void HandleItemEndDrag(ItemSlotUI itemSlotUI)
     {  
         inventorySlotUIDraggable.Toggle(false);
-        currentDraggedItemIndex = -1;
     }
 
     public void UpdateInventorySlots(ItemSlot[] slots)
     {
+        ClearUISlots();
+
         // Update UI Slots
         for (int i = 0; i < slots.Length; i++)
         {
-            if(slots[i].Item != null)
-            {
-                uiSlots[i].Set(slots[i]);
-            }
-            else
-            {
-                uiSlots[i].Clear();
-            }
+            uiSlots[i].Set(slots[i]);
+        }
+    }
+
+    private void ClearUISlots()
+    {
+        foreach (ItemSlotUI uiSlot in uiSlots)
+        {
+            uiSlot.Clear();
         }
     }
     #endregion
 
     #region Dropzone
-    public void InitializeDropzone()
-    {
-        droppablezone.OnItemDroppedOnDropZone += HandleItemDroppedOnDropZone;
-    }
-
     private void HandleItemDroppedOnDropZone()
     {
-        if(currentDraggedItemIndex == -1)
+        // Drop item
+        if(inventorySlotUIDraggable.UISlot.CurrentItemSlot.Item == null)
             return;
 
-        // Drop from inventory
-        if(inventorySlotUIDraggable.IsInventory)
-        {
-            //Inventory.Instance.DropItem(currentDraggedItemIndex);
-        }
+        inventorySlotUIDraggable.UISlot.CurrentItemSlot.DropItem();
     }
     #endregion
 
@@ -205,45 +226,33 @@ public class UIManager : Singleton<UIManager>
             uiSlot.SetPosition();
             
             quickUISlots.Add(uiSlot);
-
-            uiSlot.OnItemDroppedOnQuickSlot += HandleItemDropQuickSlot;
         }
     }
 
     private void HandleItemDropQuickSlot(QuickSlotUI quickSlotUI)
     {
-        // TODO:: Try to solve this without singleton
-        if(inventorySlotUIDraggable.IsInventory)
-        {
-            // From inventory
-            //Inventory.Instance.AddToQuickSlot(quickSlotUI.Index, currentDraggedItemIndex); 
-            EventBus.Instance.Publish("AddToQuickSlot", new SwapItemsModel(quickSlotUI.Index, currentDraggedItemIndex));
-        }
-        else
-        {
-            // FIQUEI AQUI!!!!!
-            Debug.Log("Drop no Quick Slot from another place");
-            // From bag
-            //Inventory.Instance.AddItemFromBagToQuickSlot(quickSlotUI.Index, inventorySlotUIDraggable.UISlot.CurrentItemSlot); 
-        }
-
+        quickSlotUI.CurrentItemSlot.AddToQuickSlot(inventorySlotUIDraggable.UISlot.Index, inventorySlotUIDraggable.IsInventory);
+        
         // Hide draggable slot
         inventorySlotUIDraggable.Toggle(false);
     }
 
     public void UpdateInventoryQuickSlots(QuickItemSlot[] slots)
     {
+        ClearUIQuickSlots();
+
         // Update UI Quick Slots
         for (int i = 0; i < slots.Length; i++)
         {
-            if(slots[i].Item != null)
-            {
-                quickUISlots[i].Set(slots[i]);
-            }
-            else
-            {
-                quickUISlots[i].Clear();
-            }
+            quickUISlots[i].Set(slots[i]);
+        }
+    }
+
+    private void ClearUIQuickSlots()
+    {
+        foreach (QuickSlotUI quickUISlot in quickUISlots)
+        {
+            quickUISlot.Clear();
         }
     }
 
@@ -305,7 +314,5 @@ public class UIManager : Singleton<UIManager>
             craftRecipeUIs[i].UpdateCanCraft();
         }
     }
-
     #endregion
-
 }
