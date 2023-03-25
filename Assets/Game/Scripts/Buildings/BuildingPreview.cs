@@ -8,11 +8,12 @@ public class BuildingPreview : MonoBehaviour
     [SerializeField] private Material cannotPlaceObject;
 
     private MeshRenderer[] meshRenderers;
-    private List<GameObject> collidingObjects = new List<GameObject>();
+    public List<GameObject> collidingObjects = new List<GameObject>();
 
-    void Awake ()
+    private void Awake ()
     {
         meshRenderers = transform.GetComponentsInChildren<MeshRenderer>();
+        CannotPlace();
     }
 
     public void CanPlace ()
@@ -50,7 +51,8 @@ public class BuildingPreview : MonoBehaviour
     {
         // 10 is the terrain layer
         // 11 is the interact trigger layer
-        if(other.gameObject.layer != 10 && other.gameObject.layer != 11)
+        // 13 is the buld snap points layer
+        if(other.gameObject.layer != 10 && other.gameObject.layer != 11 && other.gameObject.layer != 13)
             collidingObjects.Add(other.gameObject);
     }
 
@@ -58,7 +60,8 @@ public class BuildingPreview : MonoBehaviour
     {
         // 10 is the terrain layer
         // 11 is the interact trigger layer
-        if(other.gameObject.layer != 10 && other.gameObject.layer != 11)
+        // 13 is the buld snap points layer
+        if(other.gameObject.layer != 10 && other.gameObject.layer != 11 && other.gameObject.layer != 13)
             collidingObjects.Remove(other.gameObject);
     }
 }

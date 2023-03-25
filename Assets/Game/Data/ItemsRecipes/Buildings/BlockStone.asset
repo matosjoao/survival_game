@@ -23,3 +23,5 @@ MonoBehaviour:
   equipPrefab: {fileID: 0}
   spawnPrefab: {fileID: 3649347929968181046, guid: 3beb6a0396034ac4dac9b7e914486990, type: 3}
   previewPrefab: {fileID: 3556470531113152662, guid: fac5c46c2e2b0a64a8bb46dde2e18eac, type: 3}
+  canSnap: 1
+  snapType: 0

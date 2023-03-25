@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0121be438ba3f6468162c10f59cb7fb, type: 3}
-  m_Name: BlockWood
+  m_Name: WoodFloor
   m_EditorClassIdentifier: 
-  displayName: Wood block
+  displayName: Wood Floor
   description: 
   type: 3
-  icon: {fileID: 21300000, guid: 452bf448954a3b040bd296f044126cf8, type: 3}
+  icon: {fileID: 21300000, guid: a295d98032e8e8541ab5f4a29baf0c7d, type: 3}
   dropPrefab: {fileID: 0}
   canStack: 1
-  maxStackAmount: 1000
+  maxStackAmount: 500
   consumables: []
   equipPrefab: {fileID: 0}
-  spawnPrefab: {fileID: 6804111774592566275, guid: e407767fa15f30248a5dcb11acf9ddbc, type: 3}
-  previewPrefab: {fileID: 3556470531113152662, guid: fac5c46c2e2b0a64a8bb46dde2e18eac, type: 3}
+  spawnPrefab: {fileID: 2247576498285476602, guid: 790a9dc96fe64d547985615f980fca6c, type: 3}
+  previewPrefab: {fileID: 7721877989972894990, guid: 51896a26c57c24b40ad9410652cb39ad, type: 3}
   canSnap: 1
-  snapType: 0
+  buildType: 3

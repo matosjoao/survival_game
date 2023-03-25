@@ -23,7 +23,9 @@ public class ItemData : ScriptableObject
     [Header("Build")]
     public GameObject spawnPrefab;
     public GameObject previewPrefab;
-    public SnapType snapType;
+    public bool canSnap;
+    public SnapType buildType;
+   
 }
 
 public enum ItemType
