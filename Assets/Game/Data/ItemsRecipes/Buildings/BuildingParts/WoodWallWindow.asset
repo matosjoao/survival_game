@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0121be438ba3f6468162c10f59cb7fb, type: 3}
-  m_Name: BlockWood
+  m_Name: WoodWallWindow
   m_EditorClassIdentifier: 
-  displayName: Wood block
+  displayName: Wood Wall Window
   description: 
   type: 3
-  icon: {fileID: 21300000, guid: 452bf448954a3b040bd296f044126cf8, type: 3}
+  icon: {fileID: 21300000, guid: 14790ea453a260944ad44465f82a9d3f, type: 3}
   dropPrefab: {fileID: 0}
   canStack: 1
-  maxStackAmount: 1000
+  maxStackAmount: 500
   consumables: []
   equipPrefab: {fileID: 0}
-  spawnPrefab: {fileID: 6804111774592566275, guid: e407767fa15f30248a5dcb11acf9ddbc, type: 3}
-  previewPrefab: {fileID: 3556470531113152662, guid: fac5c46c2e2b0a64a8bb46dde2e18eac, type: 3}
+  spawnPrefab: {fileID: 2425646052373476095, guid: 164a5b5b5552e5648bbf193dbd957898, type: 3}
+  previewPrefab: {fileID: 7256202859808154899, guid: f322f0c762b03a64a9e4de0e9f29e36a, type: 3}
   canSnap: 1
-  snapType: 0
+  buildType: 2

@@ -17,6 +17,7 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
     public event Action MouseLeftEvent;
     public event Action MouseRightEvent;
     public event Action<int> QuickSlotClick;
+    public event Action RotateEvent;
 
     private PlayerControls controls;
 
@@ -142,6 +143,7 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
         if(context.performed)
         {
             IsRotating = true;
+            RotateEvent?.Invoke();
         }
         else if(context.canceled)
         {

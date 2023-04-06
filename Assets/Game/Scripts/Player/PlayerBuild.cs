@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,8 +10,10 @@ public class PlayerBuild : MonoBehaviour
     [SerializeField] private float placementUpdateRate = 0.03f;
     [SerializeField] private float placementMaxDistance = 5.0f;
     [SerializeField] private LayerMask placementLayerMask;
-    [SerializeField] private float rotationSpeed = 180.0f;
-    [SerializeField] private LayerMask buildLayer;
+
+    [Header("Foundation Properties")]
+    [SerializeField] private float foundationHeight = 0.2f;
+    [SerializeField] private float foundationMovement = 1.0f;
 
     [Header("Components")]
     private InputReader inputReader;
@@ -25,19 +25,12 @@ public class PlayerBuild : MonoBehaviour
     private BuildingPreview curBuildingPreview;
     private float lastPlacementUpdateTime;
     private bool canPlace;
-    private float curYRotation;
-    // Way1:: private SnapPoint currentSnapPoint;
 
     [Header("Build Progress Bar")]
     private float curProgressTime;
     private bool curInProgress = false;
     private float curProgress;
     private BuildPreviewProgress bPreviewProgress;
-
-    [Header("Foundation Properties")]
-    private float foundationHeight = 0.4f;
-    private float originalBaseFoudationSize = 0.2f;
-    private BuildPreviewFoundation curFoundation;
 
     private void Awake() 
     {
@@ -54,6 +47,7 @@ public class PlayerBuild : MonoBehaviour
         // Subscribe to events
         inputReader.MouseLeftEvent += HandleBuild;
         inputReader.MouseRightEvent += HandleUnBuild;
+        inputReader.RotateEvent += HandleRotate;
     }
 
     private void OnDisable() 
@@ -61,6 +55,15 @@ public class PlayerBuild : MonoBehaviour
         // Unsubscribe to events
         inputReader.MouseLeftEvent -= HandleBuild;
         inputReader.MouseRightEvent -= HandleUnBuild;
+        inputReader.RotateEvent -= HandleRotate;
+    }
+
+    private void HandleRotate()
+    {
+        if(curItemData != null && curBuildingPreview != null && !curItemData.canSnap)
+        {
+            curBuildingPreview.transform.Rotate(Vector3.up, 90f);
+        }
     }
 
     public void StartBuilding(ItemData item)
@@ -129,47 +132,27 @@ public class PlayerBuild : MonoBehaviour
                 curBuildingPreview.transform.position = hit.point;
                 //curBuildingPreview.transform.up = hit.normal;
                 //curBuildingPreview.transform.Rotate(new Vector3(0, curYRotation, 0), Space.Self);
-
-
+                
                 // Is foundation?
                 // Adjust the foundation position to match the terrain height
                 if(curItemData.canSnap && curItemData.buildType == SnapType.Foundation)
                 {
+                    // Get mouse delta y
                     float deltaY = inputReader.MouseDelta.y;
-                    foundationHeight += deltaY * 1.0f * Time.deltaTime;
-                    if (foundationHeight < 0.0f)
-                    {
-                        foundationHeight = 0.0f;
-                    }
 
-                    if (foundationHeight > 2.0f)
-                    {
-                        foundationHeight = 2.0f;
-                    }
+                    // Ajust the preview object height based on mouse y delta
+                    foundationHeight += deltaY * foundationMovement * Time.deltaTime;
+                    
+                    // Ajust min height
+                    foundationHeight = Mathf.Max(foundationHeight, 0.0f);
 
+                    // Move the preview object
                     Vector3 foundationPosition = hit.point;
                     float terrainHeight = hit.point.y;
-                    foundationPosition.y = terrainHeight + foundationHeight;
+                    foundationPosition.y = Mathf.Min(terrainHeight + foundationHeight, 4.0f);
 
                     curBuildingPreview.transform.position = foundationPosition;
-
-                    // Get current foundation
-                    if(curFoundation == null)
-                    {
-                        curFoundation = curBuildingPreview.GetComponent<BuildPreviewFoundation>();
-                    }
-                    if(curFoundation.SupportFoundations != null)
-                    {
-                        float distanceToFloor = Vector3.Distance(hit.point, curBuildingPreview.transform.position);
-                        
-                        foreach (GameObject supportFoundation in curFoundation.SupportFoundations)
-                        {
-                            float totalHeight = distanceToFloor + supportFoundation.transform.localScale.y;
-                            float scaleFactor = totalHeight / originalBaseFoudationSize;
-
-                            supportFoundation.transform.localScale = new Vector3(supportFoundation.transform.localScale.x, originalBaseFoudationSize * scaleFactor , supportFoundation.transform.localScale.z);
-                        }
-                    }
+                    
                 }
 
                 // Has snap component?
@@ -180,25 +163,37 @@ public class PlayerBuild : MonoBehaviour
                     BuildSnapPoint closestSnapPoint = GetClosestSnapPoint(buildSnap.SnapPoints, hit.point, curItemData.buildType);
                     if(closestSnapPoint != null)
                     {
-                        // Is Floor
-                        // Check if the wall was created in center or normal position
-                        // Set up ajust offset
-                        // 0.1f is walf of floor height
-                        Vector3 ajustFloorOffset = Vector3.zero;
-                        if(curItemData.buildType == SnapType.Floor && buildSnap.SnappedFromCenter)
-                        {
-                            ajustFloorOffset = 0.1f * closestSnapPoint.transform.forward;
-                        }
-
                         // Transform in positions and directions
-                        //Vector3 snapPosition = closestSnapPoint.transform.position; TODO:: DELETE
                         Vector3 snapPosition = closestSnapPoint.SnapPosition;
+                        
+                        // Rotate the preview object base on the closest snap point
                         Quaternion snapRotation = Quaternion.LookRotation(closestSnapPoint.transform.forward, Vector3.up);
                         
                         // Snap this object to the closest snap point
-                        curBuildingPreview.transform.position = snapPosition + ajustFloorOffset;
                         curBuildingPreview.transform.rotation = snapRotation;
 
+                        // Ajust offset base on the wall position
+                        float totalAjustOffset = 0.0f;
+                        if(curItemData.buildType == SnapType.Floor && buildSnap.BuildType == SnapType.Wall)
+                        {
+                            if(buildSnap.SnappedFromCenter)
+                            {
+                                totalAjustOffset += closestSnapPoint.SnapOffset/2;
+                            }
+                            else
+                            {
+                                totalAjustOffset += closestSnapPoint.SnapOffset;
+                            }
+                        }
+
+                        // Set up offset in a Vector3
+                        Vector3 ajustFloorOffset = Vector3.zero;
+                        ajustFloorOffset = totalAjustOffset * closestSnapPoint.transform.forward;
+
+                        // Move the preview object base on the closest snap point and offset
+                        curBuildingPreview.transform.position = snapPosition + ajustFloorOffset;
+
+                        // A snap point was founded, set the bool to true
                         foudSnapPoint = true;
                     } 
                 }
@@ -258,15 +253,6 @@ public class PlayerBuild : MonoBehaviour
                 canPlace = false;
             }
         }
-
-        // Build Rotation
-        if(inputReader.IsRotating)
-        {
-            curYRotation += rotationSpeed * Time.deltaTime;
-
-            if(curYRotation > 360.0f)
-                curYRotation = 0.0f;
-        } 
     }
 
     private void HandleBuild()
@@ -296,18 +282,6 @@ public class PlayerBuild : MonoBehaviour
     {
         // Create object in world
         GameObject obj = Instantiate(curItemData.spawnPrefab, curBuildingPreview.transform.position, curBuildingPreview.transform.rotation);
-
-        // Is foundation ?    
-        if(curItemData.buildType == SnapType.Foundation && obj.TryGetComponent<BuildPreviewFoundation>(out BuildPreviewFoundation buildPreviewFoundation))
-        {
-            if(buildPreviewFoundation.SupportFoundations != null)
-            {
-                foreach (GameObject baseObj in buildPreviewFoundation.SupportFoundations)
-                {
-                    baseObj.transform.localScale = curFoundation.SupportFoundations[0].transform.localScale;
-                }
-            }
-        }
 
         /* 
         // Way1:: with no snap points gameObjecs and colliders
@@ -405,8 +379,6 @@ public class PlayerBuild : MonoBehaviour
         curItemData = null;
         curBuildingPreview = null;
         canPlace = false;
-        curYRotation = 0;
-        curFoundation = null;
     }
 
     private void ResetProgress()

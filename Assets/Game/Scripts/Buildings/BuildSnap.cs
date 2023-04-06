@@ -17,6 +17,8 @@ public class BuildSnap : MonoBehaviour
     public SnapType BuildType => buildType;
     public bool SnappedFromCenter { get; private set;}
 
+    public bool SnappedFromCenterBeta;
+
     private void Awake() 
     {
         // Block
@@ -87,6 +89,7 @@ public class BuildSnap : MonoBehaviour
     public void SetSnappedFromCenter(bool value)
     {
         SnappedFromCenter = value;
+        SnappedFromCenterBeta = value;
     }
 }
 

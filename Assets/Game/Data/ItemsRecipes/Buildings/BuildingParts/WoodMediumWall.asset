@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0121be438ba3f6468162c10f59cb7fb, type: 3}
-  m_Name: BlockStone
+  m_Name: WoodMediumWall
   m_EditorClassIdentifier: 
-  displayName: Stone block
+  displayName: Wood Medium Wall
   description: 
   type: 3
-  icon: {fileID: 21300000, guid: a8fc703e9234030478136bdb072d49d1, type: 3}
+  icon: {fileID: 21300000, guid: 1946ce1a61133fb48b37d4f5f623e7f2, type: 3}
   dropPrefab: {fileID: 0}
   canStack: 1
-  maxStackAmount: 1000
+  maxStackAmount: 500
   consumables: []
   equipPrefab: {fileID: 0}
-  spawnPrefab: {fileID: 3649347929968181046, guid: 3beb6a0396034ac4dac9b7e914486990, type: 3}
-  previewPrefab: {fileID: 3556470531113152662, guid: fac5c46c2e2b0a64a8bb46dde2e18eac, type: 3}
+  spawnPrefab: {fileID: 2425646052373476095, guid: d4c54ee2be648674da8641c7385efb1e, type: 3}
+  previewPrefab: {fileID: 7256202859808154899, guid: 01d8afcaa838f7d41b2166882928698b, type: 3}
   canSnap: 1
-  snapType: 0
+  buildType: 2

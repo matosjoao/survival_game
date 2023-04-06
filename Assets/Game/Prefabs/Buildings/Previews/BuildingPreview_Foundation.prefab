@@ -348,7 +348,7 @@ Transform:
   m_GameObject: {fileID: 2000507838659536803}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.35, y: 0, z: 2.85}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2000507838889136163}
@@ -380,7 +380,7 @@ Transform:
   m_GameObject: {fileID: 2000507838683361162}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.35, y: 0, z: 2.85}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2000507837769018634}
@@ -509,7 +509,7 @@ Transform:
   m_GameObject: {fileID: 2000507838910487118}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.35, y: 0, z: 0.15}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2000507837772229909}
@@ -541,7 +541,7 @@ Transform:
   m_GameObject: {fileID: 2000507839654989428}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.35, y: 0, z: 0.15}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2000507838090088106}
@@ -644,7 +644,6 @@ GameObject:
   - component: {fileID: 8711835527292839047}
   - component: {fileID: 1436504718396621080}
   - component: {fileID: 5369336050760124826}
-  - component: {fileID: -1388185406332717006}
   m_Layer: 0
   m_Name: BuildingPreview_Foundation
   m_TagString: Untagged
@@ -732,23 +731,6 @@ MonoBehaviour:
   progressBar: {fileID: 1226384369736362710}
   originalProgress: {x: 1, y: 1, z: 0}
   scaleAxis: 2
---- !u!114 &-1388185406332717006
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8711835527292839046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14e46982ebbfa8244b6479be24492270, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  supportFoundations:
-  - {fileID: 2000507839654989428}
-  - {fileID: 2000507838910487118}
-  - {fileID: 2000507838683361162}
-  - {fileID: 2000507838659536803}
 --- !u!1 &8711835527363938435
 GameObject:
   m_ObjectHideFlags: 0

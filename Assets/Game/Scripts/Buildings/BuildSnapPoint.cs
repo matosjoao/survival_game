@@ -5,14 +5,17 @@ public class BuildSnapPoint : MonoBehaviour
 {
     [Header("Properties")]
     [SerializeField] private SnapType snapType;
-    [SerializeField] private SnapType parentObjectType;
+    [SerializeField] private float snapOffset;
+
+    public SnapType SnapType => snapType;
+    public float SnapOffset => snapOffset;
 
     public bool IsAvailable { get; private set;}
-    public SnapType SnapType => snapType;
     public Vector3 SnapPosition { get; private set;}
     public bool SnappedFromCenter { get; private set;}
-
-    public List<BuildSnapPoint> snappedPoints = new List<BuildSnapPoint>();
+    
+    public bool IsAvailableBeta; // TODO:: Delete
+    
     private BoxCollider boxCollider;
 
     private void Awake() 
@@ -20,25 +23,22 @@ public class BuildSnapPoint : MonoBehaviour
         // Get components
         boxCollider = GetComponent<BoxCollider>();
 
-        // SetVariables
+        // Set availability
         SetAvailability(true);
+
+        // Set snap position
         SnapPosition = transform.position;
+
+        // Reset snapFromCenter
         SnappedFromCenter = false;
     }
 
     private void OnTriggerEnter(Collider other) 
     {
-        if(other.TryGetComponent<BuildSnap>(out BuildSnap buildSnap))
-        {
-            if(buildSnap.BuildType == SnapType.Wall)
-            {
-                // Desactivate this snap point
-                SetAvailability(false);
-
-                buildSnap.SetSnappedFromCenter(SnappedFromCenter);
-            }
-        }
-
+        // Check if a snap point is merged with another snap point of the same type
+        // If yes and the snap type is a wall it means that a wall was build in the center of both snap points
+        // Set the position to snap n the center of the colliders
+        // Set snapFromCenter to true
         if(other.TryGetComponent<BuildSnapPoint>(out BuildSnapPoint snapPoint))
         {
             // Is the same type
@@ -50,33 +50,27 @@ public class BuildSnapPoint : MonoBehaviour
             {
                 SnapPosition = boxCollider.bounds.center;
                 SnappedFromCenter = true;
-                return;
             }
+        }
 
-            // Desactivate this snap point
-            SetAvailability(false);
+        if(other.TryGetComponent<BuildSnap>(out BuildSnap buildSnap))
+        {
+            if(buildSnap.BuildType == SnapType)
+            {
+                // Desactivate this snap point
+                SetAvailability(false);
 
-            // Desactivate the connected snap point
-            //snapPoint.SetAvailability(false);
-
-            // Add snap point to list
-            snappedPoints.Add(snapPoint);
+                // If we built a wall ?
+                if(buildSnap.BuildType == SnapType.Wall)
+                {
+                    buildSnap.SetSnappedFromCenter(SnappedFromCenter);
+                }
+            }
         }
     }
 
     private void OnTriggerExit(Collider other) 
     {
-        if(other.TryGetComponent<BuildSnap>(out BuildSnap buildSnap))
-        {
-            if(buildSnap.BuildType == SnapType.Wall)
-            {
-                // Desactivate this snap point
-                SetAvailability(true);
-
-                buildSnap.SetSnappedFromCenter(SnappedFromCenter);
-            }
-        }
-
         if(other.TryGetComponent<BuildSnapPoint>(out BuildSnapPoint snapPoint))
         {
             // Is the same type
@@ -88,23 +82,29 @@ public class BuildSnapPoint : MonoBehaviour
             {
                 SnapPosition = transform.position;
                 SnappedFromCenter = false;
-                return;
             }
+        }
 
-            // Activate this snap point
-            SetAvailability(true);
+        if(other.TryGetComponent<BuildSnap>(out BuildSnap buildSnap))
+        {
+            if(buildSnap.BuildType == SnapType)
+            {
+                // Activate this snap point
+                SetAvailability(true);
 
-            // Activate the connected snap point
-            //snapPoint.SetAvailability(true);
-
-            // Remove snap point to list
-            snappedPoints.Remove(snapPoint);
+                // If we built a wall ?
+                if(buildSnap.BuildType == SnapType.Wall)
+                {
+                    buildSnap.SetSnappedFromCenter(SnappedFromCenter);
+                }
+            }
         }
     }
 
-    public void SetAvailability(bool value)
+    private void SetAvailability(bool value)
     {
         IsAvailable = value;
+        IsAvailableBeta = value;
     }
 
     private void OnDrawGizmos() 
