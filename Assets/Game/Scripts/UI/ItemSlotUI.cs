@@ -60,6 +60,6 @@ public class ItemSlotUI : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDr
         OnItemDroppedOn?.Invoke(this);
     }
 
-    public void OnDrag(PointerEventData eventData) {}
+    public void OnDrag(PointerEventData eventData) { }
     #endregion
 }

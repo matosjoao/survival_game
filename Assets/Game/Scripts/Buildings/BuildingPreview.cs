@@ -8,7 +8,7 @@ public class BuildingPreview : MonoBehaviour
     [SerializeField] private Material cannotPlaceObject;
 
     private MeshRenderer[] meshRenderers;
-    public List<GameObject> collidingObjects = new List<GameObject>();
+    public List<GameObject> collidingObjects = new List<GameObject>(); // TODO:: Delete debug only
 
     private void Awake ()
     {

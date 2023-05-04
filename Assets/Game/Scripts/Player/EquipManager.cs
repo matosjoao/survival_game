@@ -25,7 +25,7 @@ public class EquipManager : MonoBehaviour
     }
 
     private void Update() {
-        if(inputReader.IsAttaking && currentEquip != null && !playerController.IsInteracting)
+        if(inputReader.IsPressingLeftMouse && currentEquip != null && !playerController.IsInteracting)
         {
             OnAttackInput();
         }

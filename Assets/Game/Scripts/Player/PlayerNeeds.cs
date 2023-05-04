@@ -88,7 +88,7 @@ public class PlayerNeeds : MonoBehaviour, IDamagable
         if(!sliderActive)
             return;
 
-        if(inputReader.IsAttaking)
+        if(inputReader.IsPressingLeftMouse)
         {
             OnSliderProgress(Time.deltaTime);
         }

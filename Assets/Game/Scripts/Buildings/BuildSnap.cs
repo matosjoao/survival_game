@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,7 @@ public class BuildSnap : MonoBehaviour
     public List<BuildSnapPoint> SnapPoints => snapPoints;
     public SnapType BuildType => buildType;
     public bool SnappedFromCenter { get; private set;}
+    public event Action<BuildSnap> OnBuildDestroyed;
 
     public bool SnappedFromCenterBeta;
 
@@ -90,6 +92,11 @@ public class BuildSnap : MonoBehaviour
     {
         SnappedFromCenter = value;
         SnappedFromCenterBeta = value;
+    }
+
+    private void OnDestroy() 
+    {
+        OnBuildDestroyed?.Invoke(this);
     }
 }
 

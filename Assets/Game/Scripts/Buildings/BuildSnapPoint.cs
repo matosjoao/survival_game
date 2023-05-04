@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,17 +7,17 @@ public class BuildSnapPoint : MonoBehaviour
     [Header("Properties")]
     [SerializeField] private SnapType snapType;
     [SerializeField] private float snapOffset;
+    [SerializeField] private bool defaultSnapFromCenter;
+    [SerializeField] private BuildSnapPoint parentSnapPoint;
+
+    [Header("Components")]
+    private BoxCollider boxCollider;
 
     public SnapType SnapType => snapType;
     public float SnapOffset => snapOffset;
-
     public bool IsAvailable { get; private set;}
     public Vector3 SnapPosition { get; private set;}
     public bool SnappedFromCenter { get; private set;}
-    
-    public bool IsAvailableBeta; // TODO:: Delete
-    
-    private BoxCollider boxCollider;
 
     private void Awake() 
     {
@@ -29,8 +30,13 @@ public class BuildSnapPoint : MonoBehaviour
         // Set snap position
         SnapPosition = transform.position;
 
-        // Reset snapFromCenter
-        SnappedFromCenter = false;
+        // FIQUEI AQUI
+        // Reset snap from center
+        SnappedFromCenter = defaultSnapFromCenter;
+        if(defaultSnapFromCenter)
+        {
+            SnapPosition = boxCollider.bounds.center;
+        }
     }
 
     private void OnTriggerEnter(Collider other) 
@@ -60,13 +66,29 @@ public class BuildSnapPoint : MonoBehaviour
                 // Desactivate this snap point
                 SetAvailability(false);
 
+                buildSnap.OnBuildDestroyed += HandleOnBuildDestroyed;
+
                 // If we built a wall ?
                 if(buildSnap.BuildType == SnapType.Wall)
                 {
                     buildSnap.SetSnappedFromCenter(SnappedFromCenter);
+
+                    // FIQUEI AQUI
+                    // HÁ MANEIRA DE CONTORNAR ISTO  SERÁ UMA BOA OPÇÃO??? 
+                    if(!SnappedFromCenter && parentSnapPoint)
+                    {
+                        parentSnapPoint.SetAvailability(false);
+                    }
                 }
             }
         }
+    }
+
+    private void HandleOnBuildDestroyed(BuildSnap obj)
+    {
+        SetAvailability(true);
+        
+        obj.OnBuildDestroyed -= HandleOnBuildDestroyed;
     }
 
     private void OnTriggerExit(Collider other) 
@@ -92,6 +114,8 @@ public class BuildSnapPoint : MonoBehaviour
                 // Activate this snap point
                 SetAvailability(true);
 
+                buildSnap.OnBuildDestroyed -= HandleOnBuildDestroyed;
+
                 // If we built a wall ?
                 if(buildSnap.BuildType == SnapType.Wall)
                 {
@@ -101,10 +125,9 @@ public class BuildSnapPoint : MonoBehaviour
         }
     }
 
-    private void SetAvailability(bool value)
+    public void SetAvailability(bool value)
     {
         IsAvailable = value;
-        IsAvailableBeta = value;
     }
 
     private void OnDrawGizmos() 

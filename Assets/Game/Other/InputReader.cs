@@ -8,8 +8,9 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
     public Vector2 MouseDelta { get; private set;}
     public Vector2 MousePosition { get; private set;}
 
-    public bool IsAttaking { get; private set;}
+    public bool IsPressingLeftMouse { get; private set;}
     public bool IsRotating { get; private set;}
+    public bool IsPressingRightMouse { get; private set;}
 
     public event Action JumpEvent;
     public event Action InteractEvent;
@@ -49,22 +50,27 @@ public class InputReader : MonoBehaviour, PlayerControls.IMainActions
 
     public void OnMouseRight(InputAction.CallbackContext context)
     {
-         // If not press return
-        if(!context.performed){return;}
-        // Invoke Jump event
-        MouseRightEvent?.Invoke();
+        if(context.performed)
+        {
+            IsPressingRightMouse = true;
+            MouseRightEvent?.Invoke();
+        }
+        else if(context.canceled)
+        {
+            IsPressingRightMouse = false;
+        }
     }
 
     public void OnMouseLeft(InputAction.CallbackContext context)
     {
         if(context.performed)
         {
-            IsAttaking = true;
+            IsPressingLeftMouse = true;
             MouseLeftEvent?.Invoke();
         }
         else if(context.canceled)
         {
-            IsAttaking = false;
+            IsPressingLeftMouse = false;
         }
     }
 

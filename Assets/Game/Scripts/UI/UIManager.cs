@@ -39,6 +39,13 @@ public class UIManager : Singleton<UIManager>
     private List<ItemSlotUI> uiSlots = new List<ItemSlotUI>();
     private List<QuickSlotUI> quickUISlots = new List<QuickSlotUI>();
 
+    private void Awake() 
+    {
+        // TODO:: Improve change the numbers to user input
+        InitializeUISlots(15);
+        InitializeUIQuickSlots(5);
+    }
+
     private void OnEnable() 
     {
         // Subscribe to events

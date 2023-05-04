@@ -1,11 +1,8 @@
-using System;
 using UnityEngine;
-using UnityEngine.Animations;
 
 public class BuildPreviewProgress : MonoBehaviour
 {
     [SerializeField] GameObject progressBar;
-    [SerializeField] Vector3 originalProgress;
     [SerializeField] ScaleAxis scaleAxis;
 
     public void UpdateProgress(float progress)
@@ -33,7 +30,7 @@ public class BuildPreviewProgress : MonoBehaviour
     
     public void ResetProgress()
     {
-        progressBar.transform.localScale = originalProgress;
+        progressBar.transform.localScale = Vector3.zero;
     }
 }
 

@@ -14,6 +14,7 @@ public class PlayerBuild : MonoBehaviour
     [Header("Foundation Properties")]
     [SerializeField] private float foundationHeight = 0.2f;
     [SerializeField] private float foundationMovement = 1.0f;
+    [SerializeField] private float maxFoundationHeight = 3.0f;
 
     [Header("Components")]
     private InputReader inputReader;
@@ -85,7 +86,7 @@ public class PlayerBuild : MonoBehaviour
 
     private void Update() 
     {
-        if(inputReader.IsAttaking && curInProgress)
+        if(inputReader.IsPressingLeftMouse && curInProgress)
         {
             // Update progress
             curProgress += Time.deltaTime / curProgressTime;
@@ -149,10 +150,8 @@ public class PlayerBuild : MonoBehaviour
                     // Move the preview object
                     Vector3 foundationPosition = hit.point;
                     float terrainHeight = hit.point.y;
-                    foundationPosition.y = Mathf.Min(terrainHeight + foundationHeight, 4.0f);
-
+                    foundationPosition.y = Mathf.Min(terrainHeight + foundationHeight, maxFoundationHeight);
                     curBuildingPreview.transform.position = foundationPosition;
-                    
                 }
 
                 // Has snap component?
@@ -196,6 +195,16 @@ public class PlayerBuild : MonoBehaviour
                         // A snap point was founded, set the bool to true
                         foudSnapPoint = true;
                     } 
+
+                    // TODO:: Move to a hammer tool, and their we can repair or remove
+                    if(inputReader.IsPressingRightMouse)
+                    {
+                        // Move to reset snap points
+                        //hit.transform.position = new Vector3(0, 500, 0);
+
+                        // Release it
+                        Destroy(hit.transform.gameObject/* , 2.0f */);
+                    }
                 }
             }
 

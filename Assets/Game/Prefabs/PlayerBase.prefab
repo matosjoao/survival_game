@@ -2476,7 +2476,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   freeLookMovementSpeed: 5
-  jumpForce: 80
+  jumpForce: 90
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 6071
@@ -2612,10 +2612,9 @@ MonoBehaviour:
   placementLayerMask:
     serializedVersion: 2
     m_Bits: 5120
-  rotationSpeed: 180
-  buildLayer:
-    serializedVersion: 2
-    m_Bits: 4096
+  foundationHeight: 0.2
+  foundationMovement: 1
+  maxFoundationHeight: 3
 --- !u!1 &8754169718850882695
 GameObject:
   m_ObjectHideFlags: 0
@@ -2850,7 +2849,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9008678460286445866}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 1.75, z: -1.5}
+  m_LocalPosition: {x: 0.5, y: 1.7499999, z: -1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

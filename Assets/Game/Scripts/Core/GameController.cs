@@ -13,6 +13,7 @@ public class GameController : Singleton<GameController>
     [SerializeField] ItemData itemInv5;
     [SerializeField] ItemData itemInv6;
     [SerializeField] ItemData itemInv7;
+    [SerializeField] ItemData itemInv8;
 
     private void Awake() {
         inv = FindObjectOfType<Inventory>();
@@ -27,6 +28,7 @@ public class GameController : Singleton<GameController>
             inv.AddItem(itemInv4);
             inv.AddItem(itemInv5);
             inv.AddItem(itemInv6);
+            inv.AddItem(itemInv8);
         }
 
         for (int i = 0; i < 20; i++)

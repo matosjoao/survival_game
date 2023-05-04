@@ -57,8 +57,8 @@ public class Inventory : Singleton<Inventory>
         }
 
         // Initialize UI
-        UIManager.Instance.InitializeUISlots(inventorySize);
-        UIManager.Instance.InitializeUIQuickSlots(quickAccessBarSize);
+        // UIManager.Instance.InitializeUISlots(inventorySize);
+        // UIManager.Instance.InitializeUIQuickSlots(quickAccessBarSize);
     }
 
     private void OnEnable() 

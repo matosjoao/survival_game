@@ -729,7 +729,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   progressBar: {fileID: 1226384369736362710}
-  originalProgress: {x: 1, y: 1, z: 0}
   scaleAxis: 2
 --- !u!1 &8711835527363938435
 GameObject:
